@@ -60,10 +60,10 @@ const MyPage = () => {
         {/* 退会ボタン（メニュー項目から分離) */}
         <Link
           href='/mypage/withdrawal'
-          className="block w-full p-4 bg-[#D3E4D4] hover:bg-[#C1D8C2] rounded-lg transition-colors duration-200 flex items-center gap-3 mt-8"
+          className="block w-full p-4 bg-[#989898] hover:bg-[#f99090] rounded-lg transition-colors duration-200 flex items-center gap-3 mt-8"
         >
           <span className="text-xl"><MdPersonOff /></span>
-          <span className="text-gray-700">退会</span>
+          <span className="text-gray-700">アカウント消去</span>
         </Link>
       </div>
     </div>
