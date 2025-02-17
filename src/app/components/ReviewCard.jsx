@@ -1,7 +1,6 @@
 import Image from 'next/image';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { FaRegThumbsUp, FaRegComment } from "react-icons/fa";
 
 export const ReviewCard = ({ userName, date, shopName, rating, content }) => {
@@ -18,7 +17,7 @@ export const ReviewCard = ({ userName, date, shopName, rating, content }) => {
       <div className="flex items-center gap-3 mb-2">
         <div className="w-12 h-12 relative">
           <Image
-            src="/user-icon-placeholder.png"
+            src="/default-user-icon.png"
             alt="ユーザーアイコン"
             fill
             className="rounded-full border-2 border-[#83BC87] "

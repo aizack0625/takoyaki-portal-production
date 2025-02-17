@@ -3,7 +3,6 @@
 import { KeyboardArrowDown } from '@mui/icons-material';
 import { useState } from 'react';
 import { ShopCard } from '../components/ShopCard';
-import { CiCirclePlus } from "react-icons/ci";
 
 export default function SearchPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -120,9 +119,8 @@ export default function SearchPage() {
         <>
           {/* 店舗情報登録ボタン */}
           <div className='text-right mt-2'>
-            <button className=' text-sm text-[#83BC87] underline'>
-              <CiCirclePlus />
-              店舗情報を登録
+            <button className='text-sm text-[#83BC87] underline'>
+              ＋ 店舗情報を登録
             </button>
           </div>
 
