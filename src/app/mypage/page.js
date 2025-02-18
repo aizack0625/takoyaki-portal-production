@@ -45,7 +45,7 @@ const MyPage = () => {
       </div>
 
       {/* Menu Items */}
-      <div className="space-y-4">
+      <div className="space-y-4 mb-12">
         {menuItems.map((item, index) => (
           <Link
             key={index}

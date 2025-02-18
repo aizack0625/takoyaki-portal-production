@@ -40,7 +40,7 @@ const MapPage = () => {
     );
   }
   return (
-    <div className="h-[calc(100vh-112px)]">
+    <div className="h-[calc(100vh-108px)]">
       <GoogleMap
         options={mapOptions}
         zoom={14}
