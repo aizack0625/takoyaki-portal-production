@@ -2,8 +2,9 @@ import Image from 'next/image';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import { FaRegThumbsUp, FaRegComment } from "react-icons/fa";
+import Link from "next/link";
 
-export const ReviewCard = ({ userName, date, shopName, rating, content }) => {
+export const ReviewCard = ({ userName, date, shopName, shopId, rating, content }) => {
   const renderStars = (rating) => {
     return [...Array(5)].map((_, index) => (
       index < rating
@@ -26,7 +27,9 @@ export const ReviewCard = ({ userName, date, shopName, rating, content }) => {
         <div>
           <p className="font-bold">{userName}</p>
           <p className="text-sm text-gray-500">{date}</p>
+          <Link href={`/shops/${shopId}`} >
           <p className='text-[#83BC87] font-bold cursor-pointer'>{shopName}</p>
+          </Link>
         </div>
       </div>
       <div className="flex items-center gap-1 mb-2">
