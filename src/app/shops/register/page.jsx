@@ -59,6 +59,9 @@ const ShopRegisterPage = () => {
 
   // メニューの削除処理
   const handleRemoveMenu = (index) => {
+    const isConfirmed = window.confirm("このメニューを削除してもよろしいですか？");
+    if (!isConfirmed) return;
+    
     setFormData(prev => ({
       ...prev,
       menus: prev.menus.filter((_, i) => i !== index)
