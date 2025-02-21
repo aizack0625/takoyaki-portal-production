@@ -2,9 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Dialog, DialogContent, DialogActions, Button } from "@mui/material";
 
 const ShopRegisterPage = () => {
   const router = useRouter();
+
+  // モーダル表示の状態管理
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+
   // 店舗の各情報を管理
   const [formData, setFormData] = useState({
     name: '',
@@ -12,21 +18,39 @@ const ShopRegisterPage = () => {
     city: '',
     address: '',
     postalCode: '',
-    businessHours: {
+    businessHours: [{
       start: '',
       end: '',
-    },
+    }],
     closedDays: '',
-    menus: [],
+    menus: [{ menuName: '', menuPrice: '' }],
   });
 
-  // 店舗情報を登録したら/searchページへ遷移
+  // フォーム送信時の処理
   const handleSubmit = (e) => {
     e.preventDefault();
+    // モーダルを表示
+    setIsConfirmModalOpen(true);
+  };
+
+  // 確認モーダルで「はい」を選択した時の処理
+  const handleConfirm = () => {
     // TODO: APIを呼び出して店舗情報を登録
     console.log(formData);
-    router.push('/search');
+    setIsConfirmModalOpen(false);
+    setIsCompleteModalOpen(true);
   };
+
+  // 確認モーダルで「いいえ」を選択した時の処理
+  const handleCancel = () => {
+    setIsConfirmModalOpen(false);
+  }
+
+  // 完了モーダルの「店舗一覧へ」ボタンを押した時の処理
+  const handleGoToList = () => {
+    setIsCompleteModalOpen(false);
+    router.push('/search');
+  }
 
   // フォームの入力値を管理し、setFormDataを使って
   // 状態(formData)を更新する
@@ -49,6 +73,37 @@ const ShopRegisterPage = () => {
     }
   };
 
+  // 営業時間の追加処理
+  const handleAddBusinessHour = () => {
+    setFormData(prev => ({
+      ...prev,
+      businessHours: [...prev.businessHours, { start: '', end: '' }]
+    }));
+  };
+
+  // 営業時間の削除処理
+  const handleRemoveBusinessHour = (index) => {
+    const isConfirmed = window.confirm("この営業時間を削除してもよろしいですか？");
+    if (!isConfirmed) return;
+
+    setFormData(prev => ({
+      ...prev,
+      businessHours: prev.businessHours.filter((_, i) => i !== index)
+    }));
+  };
+
+  // 営業時間の入力値を更新する処理
+  const handleBusinessHourChange = (index, e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      businessHours: prev.businessHours.map((businessHour, i) =>
+        i === index ? {...businessHour, [name]: value } : businessHour
+      )
+    }));
+  };
+
+
   // メニューの追加処理
   const handleAddMenu = () => {
     setFormData(prev => ({
@@ -61,7 +116,7 @@ const ShopRegisterPage = () => {
   const handleRemoveMenu = (index) => {
     const isConfirmed = window.confirm("このメニューを削除してもよろしいですか？");
     if (!isConfirmed) return;
-    
+
     setFormData(prev => ({
       ...prev,
       menus: prev.menus.filter((_, i) => i !== index)
@@ -184,25 +239,42 @@ const ShopRegisterPage = () => {
               ※半角数字で入力してください（例：18:30）
             </span>
           </label>
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              name="businessHours.start"
-              value={formData.businessHours.start}
-              onChange={handleChange}
-              className="w-full p-3 border rounded-lg"
-              placeholder="開始時間"
-            />
-            <span>〜</span>
-            <input
-              type="text"
-              name="businessHours.end"
-              value={formData.businessHours.end}
-              onChange={handleChange}
-              className="w-full p-3 border rounded-lg"
-              placeholder="終了時間"
-            />
-          </div>
+          {formData.businessHours.map((businessHours, index) => (
+            <div key={index} className="flex items-center gap-2 mb-2">
+              <input
+                type="text"
+                name="start"
+                value={businessHours.start || ""}
+                onChange={(e) => handleBusinessHourChange(index, e)}
+                className="w-full p-3 border rounded-lg"
+                placeholder="開始時間"
+              />
+              <span>〜</span>
+              <input
+                type="text"
+                name="end"
+                value={businessHours.end || ""}
+                onChange={(e) => handleBusinessHourChange(index, e)}
+                className="w-full p-3 border rounded-lg"
+                placeholder="終了時間"
+              />
+              {/* 削除ボタン */}
+              <button
+                type="button"
+                onClick={() => handleRemoveBusinessHour(index)}
+                className="px-3 py-2 bg-red-500 text-white rounded-lg whitespace-nowrap"
+              >
+                削除
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={handleAddBusinessHour}
+            className="w-full bg-blue-400 text-white py-2 rounded-lg mt-2"
+          >
+            営業時間を追加
+          </button>
         </div>
 
         {/* 定休日 */}
@@ -221,6 +293,7 @@ const ShopRegisterPage = () => {
         {/* メニュー情報登録 */}
         <div>
           <label className="block text-sm mb-2">メニュー情報</label>
+          {/* map関数でボタンを押してメニュー情報を繰り返し表示 */}
           {formData.menus.map((menu, index) => (
             <div key={index} className="flex gap-2 mb-2">
               {/* メニュー名 */}
@@ -233,19 +306,22 @@ const ShopRegisterPage = () => {
                 placeholder="メニュー名"
               />
               {/* 価格 */}
-              <input
-                type="text"
-                name="menuPrice"
-                value={menu.menuPrice}
-                onChange={(e) => handleMenuChange(index, e)}
-                className="w-1/3 p-3 border rounded-lg text-xs"
-                placeholder="金額（数字のみ）"
-              />
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  name="menuPrice"
+                  value={menu.menuPrice}
+                  onChange={(e) => handleMenuChange(index, e)}
+                  className="w-1/2 p-3 border rounded-lg"
+                  placeholder="金額"
+                />
+                <span className="text-gray-500">円</span>
+              </div>
               {/* 削除ボタン */}
               <button
                 type="button"
                 onClick={() => handleRemoveMenu(index)}
-                className="px-3 py-2 bg-red-500 text-white rounded-lg"
+                className="px-3 py-2 bg-red-500 text-white rounded-lg whitespace-nowrap"
               >
                 削除
               </button>
@@ -279,6 +355,77 @@ const ShopRegisterPage = () => {
           登録する
         </button>
       </form>
+
+      {/* 確認モーダル */}
+      <Dialog
+        open={isConfirmModalOpen}
+        onClose={handleCancel}
+        PaperProps={{
+          style: {
+            borderRadius: '8px',
+            padding: '16px',
+          },
+        }}
+      >
+        <DialogContent className="text-center py-4">
+          <p>入力した内容で新規店舗登録します。</p>
+        </DialogContent>
+        <DialogActions className="flex justify-center gap-4 pb-4">
+          <Button
+            onClick={handleCancel}
+            variant="contained"
+            style={{
+              backgroundColor: '#A7C7E7',
+              color: 'white',
+              borderRadius: '4px',
+              minWidth: '120px',
+            }}
+          >
+            いいえ
+          </Button>
+          <Button
+            onClick={handleConfirm}
+            variant="contained"
+            style={{
+              backgroundColor: '#FFB7B7',
+              color: 'white',
+              borderRadius: '4px',
+              minWidth: '120px',
+            }}
+          >
+            はい
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* 登録完了モーダル */}
+      <Dialog
+        open={isCompleteModalOpen}
+        PaperProps={{
+          style: {
+            borderRadius: '8px',
+            padding: '16px',
+          },
+        }}
+      >
+        <DialogContent className="text-center py-4">
+          <p>新規店舗登録が完了しました。</p>
+        </DialogContent>
+        <DialogActions className="flex justify-center pb-4">
+          <Button
+            onClick={handleGoToList}
+            variant="contained"
+            style={{
+              backgroundColor: '#FFB7B7',
+              color: 'white',
+              borderRadius: '4px',
+              minWidth: '120px',
+            }}
+          >
+            店舗一覧へ
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

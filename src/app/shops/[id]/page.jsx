@@ -49,7 +49,6 @@ const ShopDetailPage = ({ params }) => {
   return (
     <div className="pb-20">
 
-
       {/* 店舗情報 */}
       <div className="p-4">
         <h1 className="text-2xl font-bold mb-2">{shop.name}</h1>

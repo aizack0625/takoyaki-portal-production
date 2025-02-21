@@ -1,10 +1,18 @@
+'use client';
+
 import Image from 'next/image';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import { FaRegThumbsUp, FaRegComment } from "react-icons/fa";
 import Link from "next/link";
+import { useState } from 'react';
 
 export const ReviewCard = ({ userName, date, shopName, shopId, rating, content }) => {
+  const [isExpanded, setIsExpanded] = useState(false); // レビュー文字数を管理
+  const maxLength = 100; // 表示する最大文字数
+  const shouldTruncate = content. length > maxLength; // 最大文字数を超えてる場合はtrue
+  const displayText = shouldTruncate && !isExpanded ? content.slice(0, maxLength) + '...' : content; // 最大文字数より多い場合は「...」を表示
+
   const renderStars = (rating) => {
     return [...Array(5)].map((_, index) => (
       index < rating
@@ -35,7 +43,7 @@ export const ReviewCard = ({ userName, date, shopName, shopId, rating, content }
       <div className="flex items-center gap-1 mb-2">
         {renderStars(rating)}
       </div>
-      <p className="text-sm mb-3">{content}</p>
+      <p className="text-sm mb-3">{displayText}</p>
       <div className="flex items-center gap-6">
         <button className="flex items-center gap-1 text-gray-500">
           <FaRegComment sx={{ fontSize: '1.2rem' }} />
@@ -45,9 +53,14 @@ export const ReviewCard = ({ userName, date, shopName, shopId, rating, content }
           <FaRegThumbsUp sx={{ fontSize: '1.2rem' }} />
           <span className="text-sm">30</span>
         </button>
-        <button className="ml-auto px-4 py-1 text-sm text-white bg-[#83BC87] rounded-full">
-          続きを読む
-        </button>
+        {shouldTruncate && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="ml-auto px-4 py-1 text-sm text-white bg-[#83BC87] rounded-full"
+          >
+            {isExpanded ? '閉じる' : '続きを読む'}
+          </button>
+        )}
       </div>
     </div>
   );

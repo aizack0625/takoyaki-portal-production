@@ -4,10 +4,23 @@ import { KeyboardArrowDown } from '@mui/icons-material';
 import { useState } from 'react';
 import { ShopCard } from '../components/ShopCard';
 import Link from 'next/link';
+import { Dialog, DialogContent, DialogTitle, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
 
 export default function SearchPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isSearched, setIsSearched] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(''); // 検索バーに入力されたテキスト状態を管理
+  const [isSearched, setIsSearched] = useState(false); // 検索が行われたかを管理(初期値はfalse:検索されてない状態)
+  const [isPrefModalOpen, setIsPrefModalOpen] = useState(false); // 都道府県モーダルの開閉状態管理
+  const [selectedPrefecture, setSelectedPrefecture] = useState(''); //選択した都道府県を管理
+
+  const prefectures = [
+    '北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県',
+    '茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県',
+    '新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県',
+    '静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県',
+    '奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県',
+    '徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県',
+    '熊本県','大分県','宮崎県','鹿児島県','沖縄県'
+  ];
 
   const shops = [
     {
@@ -57,21 +70,30 @@ export default function SearchPage() {
     },
   ];
 
-  // filterメソッドで検索機能を実装
-  const filteredShops = shops.filter(shop =>
-    shop.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    shop.area.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // filterメソッドで都道府県とキーワード検索機能を実装
+  const filteredShops = shops.filter(shop => {
+    const matchesKeyword = searchTerm
+    ? shop.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      shop.area.toLowerCase().includes(searchTerm.toLowerCase())
+    : true;
 
-  // console.log(filteredShops);
+    const matchesPrefecture = selectedPrefecture
+    ? shop.area.includes(selectedPrefecture)
+    : true;
+
+    return matchesKeyword && matchesPrefecture;
+  });
 
   const handleSearch = (e) => {
     e.preventDefault();
     setIsSearched(true);
   };
 
-  // console.log(setSearchTerm)
-
+  const handlePrefectureSelect = (prefecture) => {
+    setSelectedPrefecture(prefecture);
+    setIsPrefModalOpen(false);
+    setIsSearched(true);
+  }
 
   return (
     <div className='container mx-auto px-4 pb-20'>
@@ -90,9 +112,34 @@ export default function SearchPage() {
       </form>
 
       {/* 都道府県から探すボタン */}
-      <button className='w-full bg-[#83BC87] text-white py-3 rounded-lg mt-4'>
+      <button
+        onClick={() => setIsPrefModalOpen(true)}
+        className='w-full bg-[#83BC87] text-white py-3 rounded-lg mt-4'
+      >
         都道府県から探す
+        {selectedPrefecture && `(${selectedPrefecture})`}
       </button>
+
+      {/* 都道府県選択モーダル */}
+      <Dialog
+        open={isPrefModalOpen}
+        onClose={() => setIsPrefModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>都道府県を選択</DialogTitle>
+        <DialogContent>
+          <List sx={{ pt: 0 }}>
+            {prefectures.map((prefecture) => (
+              <ListItem disablePadding key={prefecture}>
+                <ListItemButton onClick={() => handlePrefectureSelect(prefecture)}>
+                  <ListItemText primary={prefecture} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </DialogContent>
+      </Dialog>
 
       { isSearched ? (
         // 検索結果を表示
