@@ -2,6 +2,7 @@ import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
+import { AuthProvider } from "./contexts/AuthContext";
 
 const notoSansJP = Noto_Sans_JP({
   subsets: ["latin"],
@@ -22,9 +23,11 @@ export default function RootLayout({ children }) {
         className={notoSansJP.className}
         style={{ backgroundColor: "#FFF8F2" }}
       >
-        <Header />
-          {children}
-        <Footer />
+        <AuthProvider>
+          <Header />
+            {children}
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );
