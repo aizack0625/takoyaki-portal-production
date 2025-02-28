@@ -100,6 +100,20 @@ const MapPage = () => {
             position={shop.position}
             title={shop.name}
             onClick={() => handleMarkerClick(shop)}
+            icon={{
+              url: `data:image/svg+xml,${encodeURIComponent(`
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#ff9900"/>
+                </svg>
+              `)}`,
+              anchor: new google.maps.Point(24, 48),
+              scaledSize: new google.maps.Size(72, 72),
+            }}
+            label={{
+              text: "🐙",  // たこ焼き絵文字
+              fontSize: "30px",
+              fontFamily: "Arial",
+            }}
           />
         ))}
       </GoogleMap>
