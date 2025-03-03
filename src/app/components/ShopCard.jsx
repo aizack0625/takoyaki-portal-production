@@ -3,6 +3,19 @@ import Image from "next/image"
 import Link from "next/link";
 import { FaRegComment } from "react-icons/fa";
 
+// 営業時間をフォーマットする関数
+const formatBusinessHours = (businessHours) => {
+  if (!businessHours) return '情報なし';
+
+  // オブジェクトの配列の場合 ({start, end}の形式)
+  if (Array.isArray(businessHours)) {
+    return businessHours.map(hour => `${hour.start}~${hour.end}`).join(', ');
+  }
+
+  // すでに文字列化されている場合
+  return businessHours;
+};
+
 // 店舗カードコンポーネント
 export const ShopCard = ({ shop }) => {
   return (
@@ -41,7 +54,7 @@ export const ShopCard = ({ shop }) => {
             </div>
             <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
               <AccessTime sx={ {fontSize: '1rem'} } />
-              営業時間：{shop.businessHours}
+              営業時間：{formatBusinessHours(shop.businessHours)}
             </p>
 
           </div>

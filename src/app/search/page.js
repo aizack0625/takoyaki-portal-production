@@ -1,16 +1,33 @@
 'use client';
 
 import { KeyboardArrowDown } from '@mui/icons-material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ShopCard } from '../components/ShopCard';
 import Link from 'next/link';
 import { Dialog, DialogContent, DialogTitle, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
+import { getAllShops, getRecommendedShops } from '../services/shopService'; // ショップサービスをインポート
+
+// 店舗データ処理関数
+const processShopData = (shop) => {
+  // FirestoreのTimestampオブジェクトを日付に変換
+  const createdAt = shop.createdAt && typeof shop.createdAt.toDate === 'function'
+    ? shop.createdAt.toDate()
+    : shop.createdAt;
+
+  return {
+    ...shop,
+    createdAt,
+  };
+};
 
 export default function SearchPage() {
   const [searchTerm, setSearchTerm] = useState(''); // 検索バーに入力されたテキスト状態を管理
   const [isSearched, setIsSearched] = useState(false); // 検索が行われたかを管理(初期値はfalse:検索されてない状態)
   const [isPrefModalOpen, setIsPrefModalOpen] = useState(false); // 都道府県モーダルの開閉状態管理
   const [selectedPrefecture, setSelectedPrefecture] = useState(''); //選択した都道府県を管理
+  const [shops, setShops] = useState([]); // 店舗データの状態管理
+  const [loading, setLoading] = useState(true); // データの読み込み中の状態管理
+  const [error, setError] = useState(null); // エラー状態の管理
 
   const prefectures = [
     '北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県',
@@ -22,53 +39,61 @@ export default function SearchPage() {
     '熊本県','大分県','宮崎県','鹿児島県','沖縄県'
   ];
 
-  const shops = [
-    {
-      id: 1,
-      name: 'たこ焼きコロコロ',
-      area: '大阪府大阪市中央区',
-      rating: 4.5,
-      reviews: 50,
-      businessHours: '12:00~18:00',
-      likes: 60
-    },
-    {
-      id: 2,
-      name: 'たこ焼きキング',
-      area: '大阪府大阪市浪速区',
-      rating: 5,
-      reviews: 30,
-      businessHours: '17:00~22:00',
-      likes: 20
-    },
-    {
-      id: 3,
-      name: 'たこ焼き○○○',
-      area: '大阪府大阪市中央区',
-      rating: 4.5,
-      reviews: 50,
-      businessHours: '12:00~18:00',
-      likes: 60
-    },
-    {
-      id: 4,
-      name: 'たこ焼き△△△',
-      area: '大阪府大阪市北区',
-      rating: 2,
-      reviews: 50,
-      businessHours: '12:00~18:00',
-      likes: 60
-    },
-    {
-      id: 5,
-      name: 'たこ焼き◻︎◻︎◻︎',
-      area: '大阪府大阪市淀川区',
-      rating: 3,
-      reviews: 50,
-      businessHours: '12:00~18:00',
-      likes: 60
-    },
-  ];
+  // ページロード時に店舗データを取得
+  useEffect(() => {
+    async function fetchShops() {
+      try {
+        setLoading(true);
+        // おすすめ店舗(最新の登録店舗)を取得
+        const recommendedShopsData = await getRecommendedShops(5);
+
+        // データがない場合はデフォルトのデータを使用
+        if (recommendedShopsData.length === 0) {
+          setShops([
+            {
+              id: 1,
+              name: 'たこ焼きコロコロ',
+              area: '大阪府大阪市中央区',
+              rating: 4.5,
+              reviews: 50,
+              businessHours: '12:00~18:00',
+              likes: 60
+            },
+            {
+              id: 2,
+              name: 'たこ焼きキング',
+              area: '大阪府大阪市浪速区',
+              rating: 5,
+              reviews: 30,
+              businessHours: '17:00~22:00',
+              likes: 20
+            },
+          ]);
+        } else {
+          setShops(recommendedShopsData);
+        }
+      } catch (err) {
+        console.error('店舗データの取得に失敗しました：', err);
+        setError('店舗データの読み込みに失敗しました');
+        // エラー時はデフォルトデータを設定
+        setShops([
+          {
+            id: 1,
+            name: 'たこ焼きコロコロ',
+            area: '大阪府大阪市中央区',
+            rating: 4.5,
+            reviews: 50,
+            businessHours: '12:00~18:00',
+            likes: 60
+          }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchShops();
+  }, []);
 
   // filterメソッドで都道府県とキーワード検索機能を実装
   const filteredShops = shops.filter(shop => {
@@ -179,11 +204,29 @@ export default function SearchPage() {
           <h2 className='text-lg font-bold mt-8 mb-4'>
             おすすめのたこ焼き屋一覧
           </h2>
-          <div className='space-y-4'>
-            {shops.map((shop) => (
-              <ShopCard key={shop.id} shop={shop} />
-            ))}
-          </div>
+
+          {loading ? (
+            <div className='text-center py-8'>
+              <p>読み込み中...</p>
+            </div>
+          ) : error ? (
+            <div className='text-center py-8 text-red-500'>
+              <p>{error}</p>
+            </div>
+          ) : shops.length === 0 ? (
+            <div className='text-center py-8'>
+              <p>登録された店舗がありません</p>
+              <Link href="/shops/register" className='mt-4 inline-block bg-[#83BC87] text-white px-4 py-2 rounded-lg'>
+                店舗を登録する
+              </Link>
+            </div>
+          ) : (
+            <div className='space-y-4'>
+              {shops.map((shop) => (
+                <ShopCard key={shop.id} shop={shop} />
+              ))}
+            </div>
+          )}
         </>
       )}
     </div>

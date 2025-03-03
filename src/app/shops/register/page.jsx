@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogActions, Button } from "@mui/material";
+import { registerShop } from "../../services/shopService"; // 店舗登録サービスをインポート
 
 const ShopRegisterPage = () => {
   const router = useRouter();
 
-  // モーダル表示の状態管理
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false); // モーダル表示の状態管理
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false); // 完了モーダル表示の状態管理
+  const [loading, setLoading] = useState(false); // 店舗登録処理中の状態管理
 
   // 店舗の各情報を管理
   const [formData, setFormData] = useState({
@@ -34,11 +35,20 @@ const ShopRegisterPage = () => {
   };
 
   // 確認モーダルで「はい」を選択した時の処理
-  const handleConfirm = () => {
-    // TODO: APIを呼び出して店舗情報を登録
-    console.log(formData);
-    setIsConfirmModalOpen(false);
-    setIsCompleteModalOpen(true);
+  const handleConfirm = async () => {
+    try {
+      setLoading(true);
+      // shopServiceを使用して店舗情報を登録
+      await registerShop(formData);
+      setIsConfirmModalOpen(false);
+      setIsCompleteModalOpen(true);
+    } catch (error) {
+      console.error('店舗登録に失敗しました：', error);
+      alert('店舗の登録に失敗しました。もう一度お試しください。');
+      setIsConfirmModalOpen(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 確認モーダルで「いいえ」を選択した時の処理
@@ -350,9 +360,10 @@ const ShopRegisterPage = () => {
         {/* 登録ボタン */}
         <button
           type="submit"
-          className="w-full bg-[#83BC87] text-white py-3 rounded-lg mt-8"
+          disabled={loading}
+          className="w-full bg-[#83BC87] text-white py-3 rounded-lg mt-8 disabled:bg-gray-300"
         >
-          登録する
+          {loading ? '登録中...' : '登録する'}
         </button>
       </form>
 
@@ -385,15 +396,17 @@ const ShopRegisterPage = () => {
           </Button>
           <Button
             onClick={handleConfirm}
+            disabled={loading}
             variant="contained"
             style={{
               backgroundColor: '#FFB7B7',
               color: 'white',
               borderRadius: '4px',
               minWidth: '120px',
+              opacity: loading ? 0.7 : 1,
             }}
           >
-            はい
+            {loading ? '登録中...' : 'はい'}
           </Button>
         </DialogActions>
       </Dialog>

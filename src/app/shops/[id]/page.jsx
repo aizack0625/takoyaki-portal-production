@@ -7,7 +7,7 @@ import { FaRegPenToSquare } from "react-icons/fa6";
 import { IoBookOutline } from "react-icons/io5";
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import { ReviewCard } from "../../components/ReviewCard";
-import { useState, use } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import EventBusyOutlinedIcon from '@mui/icons-material/EventBusyOutlined';
 import Modal from '@mui/material/Modal';
@@ -16,10 +16,28 @@ import CloseIcon from '@mui/icons-material/Close';
 import { imageConfigDefault } from "next/dist/shared/lib/image-config";
 import { useAuth } from "../../contexts/AuthContext";
 import { LoginRequiredModal } from "../../components/LoginRequiredModal";
+import { getShopById } from "../../services/shopService";
+import { useParams } from "next/navigation"; // useParamsを使ってparamsを取得
+
+// 営業時間をフォーマットする関数
+const formatBusinessHours = (businessHours) => {
+  if (!businessHours) return '情報なし';
+
+  // オブジェクトの配列の場合 ({start, end}の形式)
+  if (Array.isArray(businessHours)) {
+    return businessHours.map(hour => `${hour.start}~${hour.end}`).join('. ');
+  }
+
+  // すでに文字列化されている場合
+  return businessHours;
+};
 
 const ShopDetailPage = ({ params }) => {
-  // params を use() で解決する
-  const unwrappedParams = use(params); // Promise を解決
+  const { id } = useParams(); // useParamsを使ってidを取得
+
+  const [shop, setShop] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false); // メニューモーダルの開閉状態を管理
   const [isFavorited, setIsFavorited] = useState(false); // お気に入り状態を管理
   // 口コミ投稿モーダルの状態管理
@@ -31,55 +49,39 @@ const ShopDetailPage = ({ params }) => {
   const { user } = useAuth(); // ログイン認証Auth
   const [showLoginModal, setShowLoginModal] = useState(false); // ログインモーダル表示管理
 
-  // TODO: 実際のAPIから店舗のデータを取得する
-  const [shop] = useState({
-    id: unwrappedParams.id, // 解決された params.id を使用
-    name: "たこ焼きコロコロ",
-    address: "大阪府大阪市都島区都島1-1-10",
-    rating: 4.5,
-    likes: 80,
-    reviews: 70,
-    businessHours: "9:00~18:00",
-    closedDays: "水曜日、第１月曜日",
-    reviews: [
-      {
-        userName: "相澤",
-        date: "2025.1.30",
-        rating: 5,
-        content: "ふわとろで美味しかったです！"
-      },
-      {
-        userName: "テストユーザー1",
-        date: "2025.1.30",
-        rating: 4,
-        content: "かなり美味しいです。"
-      },
-      {
-        userName: "テストユーザー2",
-        date: "2025.1.30",
-        rating: 3,
-        content: "あつあつでした。"
+  // 店舗データの取得　
+  useEffect(() => {
+    const fetchShopData = async () => {
+      setLoading(true); // データを読み込み中にする
+      try {
+        const shopData = await getShopById(id); // 店舗データを取得
+        setShop(shopData); // 取得した店舗データを状態に設定
+      } catch (err) {
+        console.error('店舗データの取得に失敗しました:', err);
+        setError('店舗情報の読み込みに失敗しました'); // エラーメッセージを設定
+
+        // エラー時にフォールバックデータを設定
+        setShop({
+          id: id,
+          name: "店舗情報を取得できませんでした",
+          address: "情報なし",
+          rating: 0,
+          likes: 0,
+          reviews: [],
+          businessHours: "情報なし",
+          closedDays: "情報なし",
+          menus: []
+        });
+      } finally {
+        setLoading(false); // データの読み込みが完了したらローディング状態を解除
       }
-    ],
-    menus: [
-      {
-        name: "たこ焼き(8個)",
-        price: 500,
-      },
-      {
-        name: "チーズたこ焼き(8個)",
-        price: 600,
-      },
-      {
-        name: "明太マヨたこ焼き(8個)",
-        price: 650,
-      },
-      {
-        name: "たこせん",
-        price: 250,
-      },
-    ]
-  });
+    };
+
+    // idがある場合は、その店舗idの情報を取得する
+    if (id) {
+      fetchShopData();
+    }
+  }, [id])
 
   const handleMenuModalOpen = () => setIsMenuModalOpen(true);
   const handleMenuModalClose = () => setIsMenuModalOpen(false);
@@ -125,6 +127,7 @@ const ShopDetailPage = ({ params }) => {
   const handleSubmitReview = async () => {
     // TODO: APIを呼び出して口コミを投稿する処理を実装
     console.log({
+      shopId: id,
       rating: reviewRating,
       content: reviewContent,
       image: selectedImage
@@ -132,16 +135,54 @@ const ShopDetailPage = ({ params }) => {
 
     // 仮の実装：reviews stateに新しいレビューを追加
     const newReview = {
-      userName: "ユーザー", // TODO: 実際のユーザー名を使用
+      userName: user?.displayName || "ユーザー", // ユーザー名を使用
       date: new Date().toLocaleDateString('ja-JP'),
       rating: reviewRating,
       content: reviewContent
     };
 
+    setShop(prev => ({
+      ...prev,
+      reviews: [newReview, ...(prev.reviews || [])]
+    }));
+
     shop.reviews.unshift(newReview);
     handleReviewModalClose();
     // TODO: 成功メッセージを表示
   };
+
+  // ローディング中の表示
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p>読み込み中...</p>
+      </div>
+    );
+  }
+
+  // エラーがある場合の表示
+  if (error && !shop) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen">
+        <p className="text-red-500">{error}</p>
+        <button
+          onClick={() => router.push('/search')}
+          className="mt-4 bg-[#83BC87] text-white py-2 px-4 rounded-lg"
+        >
+          店舗一覧に戻る
+        </button>
+      </div>
+    );
+  }
+
+  // 店舗データがない場合
+  if (!shop) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p>店舗情報が見つかりません</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -153,7 +194,7 @@ const ShopDetailPage = ({ params }) => {
           {/* 店舗画像 */}
           <div className="w-full h-64 relative">
             <Image
-              src="/shop-placeholder.png"
+              src={shop.image || "/shop-placeholder.png"}
               alt={shop.name}
               fill
               className="object-cover"
@@ -171,7 +212,9 @@ const ShopDetailPage = ({ params }) => {
             </div>
             <div className="flex items-center text-gray-600">
               <FaRegComment />
-              <span className="text-sm ml-1">{shop.reviews.length}レビュー</span>
+              <span className="text-sm ml-1">
+                {shop.reviews?.length || 0}レビュー
+              </span>
             </div>
           </div>
 
@@ -179,11 +222,13 @@ const ShopDetailPage = ({ params }) => {
 
             <div className="flex items-center text-gray-600">
               <LocationOnOutlinedIcon sx={{ fontSize: '1rem' }} className="mr-1" />
-              <span className="text-sm">住所：{shop.address}</span>
+              <span className="text-sm">住所：{shop.prefecture + shop.city + shop.address}</span>
             </div>
             <div className="flex items-center text-gray-600">
               <AccessTime sx={{ fontSize: '1rem' }} className="mr-1" />
-              <span className="text-sm">営業時間：{shop.businessHours}</span>
+              <span className="text-sm">
+                営業時間：{formatBusinessHours(shop.businessHours)}
+              </span>
             </div>
             <div className="flex items-center text-gray-600">
               <EventBusyOutlinedIcon sx={{ fontSize: '1rem' }} className="mr-1" />
@@ -318,14 +363,19 @@ const ShopDetailPage = ({ params }) => {
               </button>
               </div>
               <div className="space-y-4">
-                {shop.menus.map((menu, index) => (
-                  <div key={index} className="border-b pb-3">
-                    <div className="flex justify-between items-center">
-                      <h3 className="font-bold">{menu.name}</h3>
-                      <span className="text-red-600">¥{menu.price}</span>
+
+                {shop.menus && shop.menus.length > 0 ? ( // 店舗のメニュー情報があるか確認
+                  shop.menus.map((menu, index) => ( // メニュー情報がある場合、１つずつメニューを取り出す
+                    <div key={index} className="border-b pb-3">
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-bold">{menu.name}</h3>
+                        <span className="text-red-600">¥{menu.price}</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                ) : ( // メニュー情報がない場合のメッセージ表示
+                  <p className="text-center text-gray-500">メニュー情報がありません</p>
+                )}
               </div>
             </Box>
           </Modal>
@@ -333,16 +383,22 @@ const ShopDetailPage = ({ params }) => {
           {/* レビュー一覧 */}
           <div className="mt-8">
             <h2 className="text-xl font-bold mb-4">口コミ一覧</h2>
-            <div className="space-y-4">
-              {shop.reviews.map((review, index) => (
-                <ReviewCard
-                  key={index}
-                  {...review}
-                  shopName={shop.name}
-                  shopId={shop.id}
-                />
-              ))}
-            </div>
+            {shop.reviews && shop.reviews.length > 0 ? (
+              <div className="space-y-4">
+                {shop.reviews.map((review, index) => (
+                  <ReviewCard
+                    key={index}
+                    {...review}
+                    shopName={shop.name}
+                    shopId={shop.id}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 my-8">
+                まだ口コミがありません。最初の口コミを投稿しませんか？
+              </p>
+            )}
           </div>
         </div>
       </div>
