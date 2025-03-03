@@ -62,7 +62,7 @@ const ShopDetailPage = ({ params }) => {
     refreshReviews
   } = useReviews(id);
 
-  // 店舗データの取得関数　
+  // 店舗データの取得関数　- useEffectの外部に移動
     const fetchShopData = async () => {
       setLoading(true); // データを読み込み中にする
       try {
@@ -77,12 +77,11 @@ const ShopDetailPage = ({ params }) => {
         setShop({
           id: id,
           name: "店舗情報を取得できませんでした",
-          address: "情報なし",
-          rating: 0,
-          likes: 0,
-          reviews: [],
-          businessHours: "情報なし",
-          closedDays: "情報なし",
+          prefecture: "",
+          city: "",
+          address: "",
+          businessHours: "",
+          holidays: "",
           menus: []
         });
       } finally {
@@ -90,12 +89,10 @@ const ShopDetailPage = ({ params }) => {
       }
     };
 
-  // 初回ロード時に店舗データを取得
+  // 店舗データを取得
   useEffect(() => {
-    if (id) {
-      fetchShopData();
-    }
-  }, [id]);
+      fetchShopData(); // 関数を呼び出し
+  }, [id]); // idが変更されるたびに実行
 
   const handleMenuModalOpen = () => setIsMenuModalOpen(true);
   const handleMenuModalClose = () => setIsMenuModalOpen(false);
@@ -147,6 +144,17 @@ const ShopDetailPage = ({ params }) => {
   // レビュー投稿処理
   const handleSubmitReview = async () => {
     try {
+      if (!user) {
+        // ユーザーがログインしていない場合
+        setShowLoginModal(true);
+        return;
+      }
+
+      if (!reviewContent.trim()) {
+        alert('レビュー内容を入力してください。');
+        return;
+      }
+
       setIsSubmitting(true);
 
       // レビューデータの準備
@@ -164,10 +172,14 @@ const ShopDetailPage = ({ params }) => {
         handleReviewModalClose();
         // 店舗情報を再取得 (評価が更新されるため)
         fetchShopData();
+      } else {
+        // useReviewsフックからのエラーメッセージを表示
+        const reviewsError = error || '不明なエラーが発生しました';
+        alert(`レビュー投稿に失敗しました： ${reviewsError}`);
       }
     } catch (error) {
       console.error('レビュー投稿エラー：', error);
-      alert('レビューの投稿に失敗しました。');
+      alert(`レビュー投稿に失敗しました： ${error.message || '不明なエラーが発生しました'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -212,8 +224,18 @@ const ShopDetailPage = ({ params }) => {
       return <div className="text-center py-4">口コミを読み込み中...</div>;
     }
 
-    if (reviewError) {
-      return <div className="text-center py-4 text-red-500">{reviewsError}</div>;
+    if (reviewsError) {
+      return (
+        <div className="text-center py-4">
+          <p className="text-red-500">{reviewsError}</p>
+          <button
+            onClick={refreshReviews}
+            className="mt-2 px-4 py-1 bg-green-100 text-green-800 rounded-full"
+          >
+            再読み込み
+          </button>
+        </div>
+      );
     }
 
     if (!reviews || reviews.length === 0) {
