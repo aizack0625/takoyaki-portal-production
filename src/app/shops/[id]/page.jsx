@@ -18,6 +18,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { LoginRequiredModal } from "../../components/LoginRequiredModal";
 import { getShopById } from "../../services/shopService";
 import { useParams } from "next/navigation"; // useParamsを使ってparamsを取得
+import { useReviews } from "../../hooks/useReviews"; // レビューフックのインポート
 
 // 営業時間をフォーマットする関数
 const formatBusinessHours = (businessHours) => {
@@ -44,18 +45,30 @@ const ShopDetailPage = ({ params }) => {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false); // 口コミ投稿モーダル表示管理
   const [reviewRating, setReviewRating] = useState(3); // 口コミ投稿の星評価数の管理
   const [reviewContent, setReviewContent] = useState(''); // 口コミ投稿の文字を管理
-  const [selectedImage, setSelectedImage] = useState(null) // 口コミ投稿の画像を管理
+  const [selectedImage, setSelectedImage] = useState(null); // 口コミ投稿の画像を管理
+  const [selectedFile, setSelectedFile] = useState(null); // 口コミ投稿のファイル選択管理
+  const [isSubmitting, setIsSubmitting] = useState(false); // 口コミ投稿管理
   const router = useRouter();
   const { user } = useAuth(); // ログイン認証Auth
   const [showLoginModal, setShowLoginModal] = useState(false); // ログインモーダル表示管理
 
-  // 店舗データの取得　
-  useEffect(() => {
+  // レビューフックの利用
+  const {
+    reviews,
+    isLoading: reviewsLoading,
+    error: reviewsError,
+    addReview,
+    removeReview,
+    refreshReviews
+  } = useReviews(id);
+
+  // 店舗データの取得関数　
     const fetchShopData = async () => {
       setLoading(true); // データを読み込み中にする
       try {
         const shopData = await getShopById(id); // 店舗データを取得
         setShop(shopData); // 取得した店舗データを状態に設定
+        setError(null)
       } catch (err) {
         console.error('店舗データの取得に失敗しました:', err);
         setError('店舗情報の読み込みに失敗しました'); // エラーメッセージを設定
@@ -77,11 +90,12 @@ const ShopDetailPage = ({ params }) => {
       }
     };
 
-    // idがある場合は、その店舗idの情報を取得する
+  // 初回ロード時に店舗データを取得
+  useEffect(() => {
     if (id) {
       fetchShopData();
     }
-  }, [id])
+  }, [id]);
 
   const handleMenuModalOpen = () => setIsMenuModalOpen(true);
   const handleMenuModalClose = () => setIsMenuModalOpen(false);
@@ -102,6 +116,7 @@ const ShopDetailPage = ({ params }) => {
     }
   };
 
+  // レビューモーダルを開く
   const handleReviewModalOpen = () => {
     if (!user) { // ログイン済みでない場合、ログインモーダルを表示
       setShowLoginModal(true);
@@ -110,45 +125,52 @@ const ShopDetailPage = ({ params }) => {
     setIsReviewModalOpen(true)
   };
 
+  // レビューモーダルを閉じる
   const handleReviewModalClose = () => {
     setIsReviewModalOpen(false);
+    // 入力内容をリセット
     setReviewRating(3);
-    setReviewContent('')
-    setSelectedImage(null)
+    setReviewContent('');
+    setSelectedImage(null);
+    setSelectedFile(null);
   };
 
+  // 画像選択処理
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setSelectedFile(file);
       setSelectedImage(URL.createObjectURL(file));
     }
   };
 
+  // レビュー投稿処理
   const handleSubmitReview = async () => {
-    // TODO: APIを呼び出して口コミを投稿する処理を実装
-    console.log({
-      shopId: id,
-      rating: reviewRating,
-      content: reviewContent,
-      image: selectedImage
-    });
+    try {
+      setIsSubmitting(true);
 
-    // 仮の実装：reviews stateに新しいレビューを追加
-    const newReview = {
-      userName: user?.displayName || "ユーザー", // ユーザー名を使用
-      date: new Date().toLocaleDateString('ja-JP'),
-      rating: reviewRating,
-      content: reviewContent
-    };
+      // レビューデータの準備
+      const reviewData = {
+        rating: reviewRating,
+        content: reviewContent,
+        imageFile: selectedFile
+      };
 
-    setShop(prev => ({
-      ...prev,
-      reviews: [newReview, ...(prev.reviews || [])]
-    }));
+      // レビュー投稿
+      const success = await addReview(reviewData);
 
-    shop.reviews.unshift(newReview);
-    handleReviewModalClose();
-    // TODO: 成功メッセージを表示
+      if (success) {
+        // 投稿成功
+        handleReviewModalClose();
+        // 店舗情報を再取得 (評価が更新されるため)
+        fetchShopData();
+      }
+    } catch (error) {
+      console.error('レビュー投稿エラー：', error);
+      alert('レビューの投稿に失敗しました。');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // ローディング中の表示
@@ -183,6 +205,35 @@ const ShopDetailPage = ({ params }) => {
       </div>
     );
   }
+
+  // レビューセクションのレンダリング
+  const renderReviewSection = () => {
+    if (reviewsLoading) {
+      return <div className="text-center py-4">口コミを読み込み中...</div>;
+    }
+
+    if (reviewError) {
+      return <div className="text-center py-4 text-red-500">{reviewsError}</div>;
+    }
+
+    if (!reviews || reviews.length === 0) {
+      return <div className="text-center py-4">まだ口コミがありません。最初の口コミを投稿しませんか？</div>;
+    }
+
+    return reviews.map((review) => (
+      <ReviewCard
+        key={review.id}
+        userName={review.userName}
+        date={review.date}
+        shopName={shop?.name}
+        shopId={shop?.id}
+        rating={review.rating}
+        content={review.content}
+        showDeleteButton={user?.uid === review.userId}
+        onDelete={() => removeReview(review.id)}
+      />
+    ));
+  };
 
   return (
     <>
@@ -332,14 +383,14 @@ const ShopDetailPage = ({ params }) => {
 
               <button
                 onClick={handleSubmitReview}
-                disabled={!reviewContent.trim()}
+                disabled={!reviewContent.trim() || isSubmitting}
                 className={`w-full py-3 rounded-lg ${
-                  reviewContent.trim()
+                  reviewContent.trim() && !isSubmitting
                     ? 'bg-[#83BC87] text-white cursor-pointer'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                投稿
+                {isSubmitting ? '投稿中...' : '投稿'}
               </button>
             </Box>
           </Modal>
@@ -383,22 +434,7 @@ const ShopDetailPage = ({ params }) => {
           {/* レビュー一覧 */}
           <div className="mt-8">
             <h2 className="text-xl font-bold mb-4">口コミ一覧</h2>
-            {shop.reviews && shop.reviews.length > 0 ? (
-              <div className="space-y-4">
-                {shop.reviews.map((review, index) => (
-                  <ReviewCard
-                    key={index}
-                    {...review}
-                    shopName={shop.name}
-                    shopId={shop.id}
-                  />
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-gray-500 my-8">
-                まだ口コミがありません。最初の口コミを投稿しませんか？
-              </p>
-            )}
+            {renderReviewSection()}
           </div>
         </div>
       </div>
