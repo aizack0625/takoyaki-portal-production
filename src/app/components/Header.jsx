@@ -36,6 +36,12 @@ export const Header = () => {
         return 'お気に入り';
       case '/mypage':
         return 'マイページ';
+      case '/mypage/edit-avatar':
+        return 'ユーザー画像変更';
+      case '/mypage/liked-comments':
+        return 'いいねした口コミ';
+      case '/mypage/my-comments':
+        return '投稿した口コミ';
       default:
         if (path.startsWith('/shops/')) {
           return '店舗詳細';
