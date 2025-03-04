@@ -107,7 +107,7 @@ export default function FavoritePage() {
     return (
       <LoginRequiredModal
         open={showLoginModal}
-        onClose={() => router.push('/')}
+        onClose={() => router.push('/login')}
       />
     );
   }

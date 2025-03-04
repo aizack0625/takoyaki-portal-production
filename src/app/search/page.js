@@ -4,8 +4,11 @@ import { KeyboardArrowDown } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { ShopCard } from '../components/ShopCard';
 import Link from 'next/link';
+import { useAuth } from '../contexts/AuthContext';
+import { LoginRequiredModal } from '../components/LoginRequiredModal';
 import { Dialog, DialogContent, DialogTitle, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
 import { getAllShops, getRecommendedShops } from '../services/shopService'; // ショップサービスをインポート
+import { useRouter } from 'next/navigation';
 
 // 店舗データ処理関数
 const processShopData = (shop) => {
@@ -28,6 +31,18 @@ export default function SearchPage() {
   const [shops, setShops] = useState([]); // 店舗データの状態管理
   const [loading, setLoading] = useState(true); // データの読み込み中の状態管理
   const [error, setError] = useState(null); // エラー状態の管理
+  const { user } = useAuth();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const router = useRouter();
+
+  // 店舗情報登録ボタンのクリックハンドラー
+  const handleRegisterClick = () => {
+    if (!user) {
+      setShowLoginModal(true);
+      return;
+    }
+    router.push('/shops/register');
+  };
 
   const prefectures = [
     '北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県',
@@ -45,7 +60,7 @@ export default function SearchPage() {
       try {
         setLoading(true);
         // おすすめ店舗(最新の登録店舗)を取得
-        const recommendedShopsData = await getRecommendedShops(5);
+        const recommendedShopsData = await getRecommendedShops(10);
 
         // データがない場合はデフォルトのデータを使用
         if (recommendedShopsData.length === 0) {
@@ -192,12 +207,12 @@ export default function SearchPage() {
         <>
           {/* 店舗情報登録ボタン */}
           <div className='text-right mt-2'>
-            <Link
-              href="/shops/register"
+            <button
+              onClick={handleRegisterClick}
               className='text-sm text-[#83BC87] underline'
             >
               ＋ 店舗情報を登録
-            </Link>
+            </button>
           </div>
 
           {/* おすすめのたこ焼き屋一覧 */}
@@ -229,6 +244,12 @@ export default function SearchPage() {
           )}
         </>
       )}
+
+      {/* ログイン要求モーダル */}
+      <LoginRequiredModal
+        open={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
     </div>
   );
 }

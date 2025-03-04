@@ -251,8 +251,6 @@ const ShopDetailPage = ({ params }) => {
         shopId={shop?.id}
         rating={review.rating}
         content={review.content}
-        showDeleteButton={user?.uid === review.userId}
-        onDelete={() => removeReview(review.id)}
       />
     ));
   };
@@ -286,7 +284,7 @@ const ShopDetailPage = ({ params }) => {
             <div className="flex items-center text-gray-600">
               <FaRegComment />
               <span className="text-sm ml-1">
-                {shop.reviews?.length || 0}レビュー
+                {reviews ? reviews.length : 0}レビュー
               </span>
             </div>
           </div>
@@ -310,27 +308,27 @@ const ShopDetailPage = ({ params }) => {
           </div>
 
           {/* メニュー情報、お気に入り登録、マップを見る、口コミ投稿ボタン */}
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-6 justify-center items-center">
           <button
             onClick={handleMenuModalOpen}
-            className="w-[48%] bg-[#83BC87] text-[#41372F] border-2 border-[#41372F] py-2 rounded-full flex items-center justify-center gap-1"
+            className="w-[46%] bg-[#83BC87] text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1"
           >
               <IoBookOutline sx={{ fontSize: '1rem', color: '#FF7474' }} />
               メニュー情報
             </button>
             <button
               onClick={handleFavoriteClick}
-              className={`w-[48%] ${isFavorited ? 'bg-[#FF8E8E]' : 'bg-[#FFCACA]'} text-[#41372F] border-2 border-[#41372F] py-2 rounded-full flex items-center justify-center gap-1`}>
+              className={`w-[46%] ${isFavorited ? 'bg-[#FF8E8E]' : 'bg-[#FFCACA]'} text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1`}>
               <Favorite sx={{ fontSize: '1rem', color: '#FF7474' }} />
               {isFavorited ? 'お気に入り登録ずみ' : 'お気に入り登録'}
             </button>
-            <button className="w-[48%] bg-[#B0E6FF] text-[#41372F] border-2 border-[#41372F] py-2 rounded-full flex items-center justify-center gap-1">
+            <button className="w-[46%] bg-[#B0E6FF] text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1">
               <LocationOnOutlinedIcon />
               マップを見る
             </button>
             <button
               onClick={handleReviewModalOpen}
-              className="w-[48%] bg-[#ececec] text-[#41372F] border-2 border-[#41372F] py-2 rounded-full flex items-center justify-center gap-1"
+              className="w-[46%] bg-[#ececec] text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1"
             >
               <FaRegPenToSquare />
               口コミを投稿
@@ -441,8 +439,8 @@ const ShopDetailPage = ({ params }) => {
                   shop.menus.map((menu, index) => ( // メニュー情報がある場合、１つずつメニューを取り出す
                     <div key={index} className="border-b pb-3">
                       <div className="flex justify-between items-center">
-                        <h3 className="font-bold">{menu.name}</h3>
-                        <span className="text-red-600">¥{menu.price}</span>
+                        <h3 className="font-bold">{menu.menuName}</h3>
+                        <span className="text-red-600">¥{menu.menuPrice}</span>
                       </div>
                     </div>
                   ))

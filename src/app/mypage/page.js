@@ -52,7 +52,7 @@ const MyPage = () => {
       setTimeout(() => {
         setShowCompleteModal(false);
         router.push('/');
-      }, 2000);
+      }, 5000);
     } catch (error) {
       console.error('ログアウトに失敗しました：', error);
     }
@@ -62,7 +62,7 @@ const MyPage = () => {
     return (
       <LoginRequiredModal
         open={showLoginModal}
-        onClose={() => router.push('/')}
+        onClose={() => router.push('/login')}
       />
     );
   }
