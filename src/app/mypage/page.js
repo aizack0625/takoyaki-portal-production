@@ -71,8 +71,8 @@ const MyPage = () => {
   const menuItems = [
     { icon: <GoPencil />, text: 'ユーザー名変更', href: '/mypage/edit-name'},
     { icon: <MdInsertPhoto />, text: 'ユーザー画像変更', href: '/mypage/edit-avatar'},
-    { icon: <FaRegComment />, text: '投稿したコメントを見る', href: '/mypage/my-comments'},
-    { icon: <FaRegThumbsUp />, text: 'いいねしたコメントを見る', href: '/mypage/liked-comments'},
+    { icon: <FaRegComment />, text: '投稿した口コミを見る', href: '/mypage/my-comments'},
+    { icon: <FaRegThumbsUp />, text: 'いいねした口コミを見る', href: '/mypage/liked-comments'},
     { icon: <IoKey />, text: 'パスワード変更', href: '/mypage/change-password'},
   ];
 

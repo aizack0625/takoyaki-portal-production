@@ -59,8 +59,8 @@ export default function SearchPage() {
     async function fetchShops() {
       try {
         setLoading(true);
-        // おすすめ店舗(最新の登録店舗)を取得
-        const recommendedShopsData = await getRecommendedShops(10);
+        // おすすめ店舗(最新の登録店舗)を最大100店舗まで取得
+        const recommendedShopsData = await getRecommendedShops(100);
 
         // データがない場合はデフォルトのデータを使用
         if (recommendedShopsData.length === 0) {

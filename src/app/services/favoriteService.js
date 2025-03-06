@@ -7,7 +7,8 @@ import {
   where,
   doc,
   getDoc,
-  deleteDoc
+  deleteDoc,
+  getCountFromServer
 } from "firebase/firestore";
 import { app } from '../firebase/config';
 
@@ -106,14 +107,26 @@ export const getUserFavorites = async (userId) => {
         const shopDoc = await getDoc(doc(db, 'shops', favoriteData.shopId));
 
         if (shopDoc.exists()) {
+          // レビュー数を取得
+          const reviewsQuery = query(collection(db, 'reviews'), where('shopId', '==', favoriteData.shopId));
+          const reviewsSnapshot = await getCountFromServer(reviewsQuery);
+          const reviewCount = reviewsSnapshot.data().count;
+
+          // お気に入り数を取得
+          const favoritesQuery = query(collection(db, 'favorites'), where('shopId', '==', favoriteData.shopId));
+          const favoritesSnapshot = await getCountFromServer(favoritesQuery);
+          const likesCount = favoritesSnapshot.data().count;
+
           return {
             id: favoriteDoc.id,
             shopId: favoriteData.shopId,
             shop: {
               id: shopDoc.id,
-              ...shopDoc.data()
+              ...shopDoc.data(),
+              reviews: reviewCount,
+              likes: likesCount
             },
-            createdAt: favoriteData.createdAt
+            createdAt: favoriteData.createdAt,
           };
         }
         return null;

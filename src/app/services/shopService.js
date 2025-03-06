@@ -137,10 +137,16 @@ export const getRecommendedShops = async (limitCount = 5) => {
       const reviewsSnapshot = await getCountFromServer(reviewsQuery);
       const reviewCount = reviewsSnapshot.data().count;
 
+      // お気に入り数を取得
+      const favoritesQuery = query(collection(db, 'favorites'), where('shopId', '==', doc.id));
+      const favoritesSnapshot = await getCountFromServer(favoritesQuery);
+      const likesCount = favoritesSnapshot.data().count;
+
       shops.push({
         id: doc.id,
         ...shopData,
-        reviews: reviewCount
+        reviews: reviewCount,
+        likes: likesCount // 実際のお気に入り数で上書き
       });
     }
 
