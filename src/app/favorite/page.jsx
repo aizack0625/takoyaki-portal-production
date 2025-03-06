@@ -1,146 +1,116 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Box, Typography, IconButton, ratingClasses } from '@mui/material';
-import { ShopCard } from '../components/ShopCard';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import { useAuth } from '../contexts/AuthContext';
-import { LoginRequiredModal } from '../components/LoginRequiredModal';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../contexts/AuthContext';
+import { getUserFavorites, removeFavorite } from '../services/favoriteService';
+import { ShopCard } from '../components/ShopCard';
+import { FaHeart } from 'react-icons/fa';
+import IconButton from '@mui/material/IconButton';
 
-// ハードコードの店舗データ
-// TODO: APIから実際の店舗データを取得する
-const favoriteShops = [
-  {
-    id: 1,
-    name: 'たこ焼きコロコロ',
-    image: '/images/shop-placeholder.png',
-    address: '大阪府大阪市中央区◯◯2丁目1-1',
-    area: '大阪市中央区',
-    rating: 4.5,
-    likes: 120,
-    reviews: 50,
-    businessHours: '11:00~20:00',
-  },
-  {
-    id: 2,
-    name: 'たこ焼きたこ丸',
-    image: '/images/shop-placeholder.png',
-    address: '大阪府大阪市中央区◯◯2丁目1-1',
-    area: '大阪市中央区',
-    rating: 3.5,
-    likes: 100,
-    reviews: 20,
-    businessHours: '11:00~20:00',
-  },
-  {
-    id: 3,
-    name: 'たこ焼きコロコロ',
-    image: '/images/shop-placeholder.png',
-    address: '大阪府大阪市中央区◯◯2丁目1-1',
-    area: '大阪市中央区',
-    rating: 4.5,
-    likes: 120,
-    reviews: 50,
-    businessHours: '11:00~20:00',
-  },
-  {
-    id: 4,
-    name: 'たこ焼きコロコロ',
-    image: '/images/shop-placeholder.png',
-    address: '大阪府大阪市中央区◯◯2丁目1-1',
-    area: '大阪市中央区',
-    rating: 4.5,
-    likes: 120,
-    reviews: 50,
-    businessHours: '11:00~20:00',
-  },
-  {
-    id: 5,
-    name: 'たこ焼きコロコロ',
-    image: '/images/shop-placeholder.png',
-    address: '大阪府大阪市中央区◯◯2丁目1-1',
-    area: '大阪市中央区',
-    rating: 4.5,
-    likes: 120,
-    reviews: 50,
-    businessHours: '11:00~20:00',
-  },
-  {
-    id: 6,
-    name: 'たこ焼きコロコロ',
-    image: '/images/shop-placeholder.png',
-    address: '大阪府大阪市中央区◯◯2丁目1-1',
-    area: '大阪市中央区',
-    rating: 4.5,
-    likes: 120,
-    reviews: 50,
-    businessHours: '11:00~20:00',
-  },
-];
-
+// お気に入りページのメインコンポーネント
 export default function FavoritePage() {
   const { user } = useAuth(); // ログインしているかどうか
+  const [favoriteShops, setFavoriteShops] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const [showLoginModal, setShowLoginModal] = useState(false); // ログインモーダル表示管理
 
-  // ログイン済みか確認をする
+  // お気に入り店舗のデータを取得
   useEffect(() => {
-    if (!user) {
-      setShowLoginModal(true);
-    }
+    const fetchFavorites = async () => {
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const favorites = await getUserFavorites(user.uid);
+        // shop情報を取り出す
+        const favoriteShopsData = favorites.map(favorite => favorite.shop);
+        setFavoriteShops(favoriteShopsData);
+      } catch (error) {
+        console.error('お気に入り取得エラー:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFavorites();
   }, [user]);
 
-  const handleRemoveFavorite = (shopId) => {
-    if(!user) {
-      setShowLoginModal(true);
-      return;
-    }
-    // 確認ダイアログ表示
+  // お気に入りを削除する処理
+  const handleRemoveFavorite = async (shopId) => {
+    if (!user) return;
+
     if (window.confirm('お気に入りを解除してよろしいですか？')) {
-      // TODO: お気に入り解除の処理を実装
-      console.log(`Shop ${shopId} removed from favorites`);
+      try {
+        // Firestoreからお気に入りを削除
+        await removeFavorite(user.uid, shopId);
+
+        // UIを更新
+        setFavoriteShops(prevShops => prevShops.filter(shop => shop.id !== shopId));
+      } catch (error) {
+        console.error('お気に入り削除エラー：', error);
+      }
     }
   };
 
   if (!user) {
     return (
-      <LoginRequiredModal
-        open={showLoginModal}
-        onClose={() => router.push('/login')}
-      />
+      <div className='container mx-auto px-4 py-8'>
+        <h1 className='text-2xl font-bold mb-6'>お気に入り</h1>
+        <div className='bg-white rounded-lg shadow-sm p-8 text-center'>
+          <p className='mb-4'>お気に入り機能を利用するにはログインが必要です</p>
+          <button
+            onClick={() => router.push('/login')}
+            className='bg-[#83BC87] text-white px-6 py-2 rounded-full'
+          >
+            ログインする
+          </button>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ pb: 7, pt: 2, px: 2 }}>
-      <Typography variant='h5' component="h1" sx={{ mb: 3, fontWeight: 'bold '}}>
-        お気に入り店舗
-      </Typography>
+    <div className='container mx-auto px-4 py-8 pb-20'>
+      <h1 className='text-2xl font-bold mb-6'>お気に入り</h1>
 
-      {favoriteShops.map((shop) => (
-        <div key={shop.id} className='relative'>
-          <ShopCard shop={shop} />
-          <IconButton
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: '#ff1744',
-              zIndex: 10,
-            }}
-            onClick={() => handleRemoveFavorite(shop.id)}
-          >
-            <FavoriteIcon />
-          </IconButton>
+      {isLoading ? (
+        <div className='text-center py-8'>
+          <p>読み込み中...</p>
         </div>
-      ))}
-
-      {favoriteShops.length === 0 && (
-        <Typography variant='body1' sx={{ textAlign: 'center', mt: 4 }}>
-          お気に入りの店舗がありません
-        </Typography>
+      ) : favoriteShops.length === 0 ? (
+        <div className='bg-white rounded-lg shadow-sm p-8 text-center'>
+          <p className='mb-4'>お気に入りに追加した店舗はありません</p>
+          <button
+            onClick={() => router.push('/search')}
+            className='bg-[83BC87] text-white px-6 py-2 rounded-full'
+          >
+            店舗を探す
+          </button>
+        </div>
+      ) : (
+        <div className='space-y-4'>
+          {favoriteShops.map((shop) => (
+            <div key={shop.id} className='relative'>
+              <ShopCard shop={shop} />
+              <IconButton
+                sx={{
+                  position: 'absolute',
+                  right: 8,
+                  top: 8,
+                  color: '#ff1744',
+                }}
+                onClick={() => handleRemoveFavorite(shop.id)}
+              >
+                <FaHeart sx={{fonSize: "2px" }} />
+              </IconButton>
+            </div>
+          ))}
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

@@ -19,6 +19,7 @@ import { LoginRequiredModal } from "../../components/LoginRequiredModal";
 import { getShopById } from "../../services/shopService";
 import { useParams } from "next/navigation"; // useParamsを使ってparamsを取得
 import { useReviews } from "../../hooks/useReviews"; // レビューフックのインポート
+import { addFavorite, removeFavorite, isFavorite } from "../../services/favoriteService";
 
 // 営業時間をフォーマットする関数
 const formatBusinessHours = (businessHours) => {
@@ -41,6 +42,7 @@ const ShopDetailPage = ({ params }) => {
   const [error, setError] = useState(null);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false); // メニューモーダルの開閉状態を管理
   const [isFavorited, setIsFavorited] = useState(false); // お気に入り状態を管理
+  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false); // お気に入り登録ロード状態管理
   // 口コミ投稿モーダルの状態管理
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false); // 口コミ投稿モーダル表示管理
   const [reviewRating, setReviewRating] = useState(3); // 口コミ投稿の星評価数の管理
@@ -94,22 +96,52 @@ const ShopDetailPage = ({ params }) => {
       fetchShopData(); // 関数を呼び出し
   }, [id]); // idが変更されるたびに実行
 
+  // お気に入り状態を取得
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      if (user && id) {
+        try {
+          setIsFavoriteLoading(true);
+          const favoriteStatus = await isFavorite(user.uid, id);
+          setIsFavorited(favoriteStatus);
+        } catch (error) {
+          console.error('お気に入り状態確認エラー：', error);
+        } finally {
+          setIsFavoriteLoading(false);
+        }
+      }
+    };
+
+    checkFavoriteStatus();
+  }, [user, id]);
+
   const handleMenuModalOpen = () => setIsMenuModalOpen(true);
   const handleMenuModalClose = () => setIsMenuModalOpen(false);
 
   // お気に入りボタンのクリックハンドラー
-  const handleFavoriteClick = () => {
+  const handleFavoriteClick = async () => {
     if (!user) { // ログイン済みでない場合、ログインモーダルを表示
       setShowLoginModal(true);
       return;
     }
 
-    if (!isFavorited) {
-      setIsFavorited(true);
-    } else {
-      if (confirm('お気に入りを解除しますか？')) {
-        setIsFavorited(false);
+    try {
+      setIsFavoriteLoading(true);
+
+      if (isFavorited) {
+        // お気に入りから削除
+        await removeFavorite(user.uid, id);
+      } else {
+        // お気に入り追加
+        await addFavorite(user.uid, id);
       }
+
+      // 状態を更新
+      setIsFavorited(!isFavorited);
+    } catch (error) {
+      console.error('お気に入り処理エラー：', error);
+    } finally {
+      setIsFavoriteLoading(false);
     }
   };
 
@@ -318,6 +350,7 @@ const ShopDetailPage = ({ params }) => {
             </button>
             <button
               onClick={handleFavoriteClick}
+              disabled={isFavoriteLoading}
               className={`w-[46%] ${isFavorited ? 'bg-[#FF8E8E]' : 'bg-[#FFCACA]'} text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1`}>
               <Favorite sx={{ fontSize: '1rem', color: '#FF7474' }} />
               {isFavorited ? 'お気に入り登録ずみ' : 'お気に入り登録'}

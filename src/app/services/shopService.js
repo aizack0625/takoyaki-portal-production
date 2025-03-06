@@ -8,7 +8,9 @@ import {
   getDoc, // 特定のドキュメントを取得
   query, // クエリを作成
   orderBy, // クエリの結果を特定のフィールド順に並べ替え
-  limit // クエリの取得数を制限
+  limit, // クエリの取得数を制限
+  where, // Firestoreからデータを検索
+  getCountFromServer, // ドキュメント数を取得
 } from "firebase/firestore";
 import { app } from '../firebase/config';
 
@@ -56,10 +58,23 @@ export const registerShop = async (shopData) => {
 export const getAllShops = async () => {
   try {
     const shopsSnapshot = await getDocs(collection(db, 'shops'));
-    return shopsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const shops = [];
+
+    for (const doc of shopsSnapshot.docs) {
+      const shopData = doc.data();
+      // レビュー数を取得
+      const reviewsQuery = query(collection(db, 'reviews'), where('shopId', '==', doc.id));
+      const reviewsSnapshot = await getCountFromServer(reviewsQuery);
+      const reviewCount = reviewsSnapshot.data().count;
+
+      shops.push({
+        id: doc.id,
+        ...shopData,
+        reviews: reviewCount
+      });
+    }
+
+    return shops;
   } catch (error) {
     console.error('店舗取得エラー：', error);
     throw error;
@@ -77,10 +92,16 @@ export const getShopById = async (shopId) => {
     if (shopDoc.exists()){
       const shopData = shopDoc.data();
 
+      // レビュー数を取得
+      const reviewsQuery = query(collection(db, 'reviews'), where('shopId', '==', shopId));
+      const reviewsSnapshot = await getCountFromServer(reviewsQuery);
+      const reviewCount = reviewsSnapshot.data().count;
+
       // businessHoursがマップ型の場合は処理する
       let processedShop = {
         id: shopDoc.id,
-        ...shopData
+        ...shopData,
+        reviews: reviewCount
       };
 
       return processedShop;
@@ -107,10 +128,23 @@ export const getRecommendedShops = async (limitCount = 5) => {
     );
 
     const shopsSnapshot = await getDocs(q);
-    return shopsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const shops = [];
+
+    for (const doc of shopsSnapshot.docs) {
+      const shopData = doc.data();
+      // レビュー数を取得
+      const reviewsQuery = query(collection(db, 'reviews'), where('shopId', '==', doc.id));
+      const reviewsSnapshot = await getCountFromServer(reviewsQuery);
+      const reviewCount = reviewsSnapshot.data().count;
+
+      shops.push({
+        id: doc.id,
+        ...shopData,
+        reviews: reviewCount
+      });
+    }
+
+    return shops;
   } catch (error) {
     console.error('おすすめ店舗取得エラー：', error);
     throw error;

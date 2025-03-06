@@ -185,7 +185,6 @@ const ShopRegisterPage = () => {
             <option
               value=""
               disabled
-              selected
             >
               選択してください
             </option>

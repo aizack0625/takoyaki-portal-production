@@ -34,7 +34,7 @@ export const ReviewCard = ({
   };
 
   return (
-    <div className="bg-white rounded-lg p-4 shadow-sm mb-4 relative">
+    <div className="bg-white rounded-lg py-8 px-16 shadow-sm mb-4 relative">
 
       {/* マイページの投稿した口コミ一覧でのみ、投稿を削除ボタンを表示 */}
       {showDeleteButton && (
@@ -59,7 +59,7 @@ export const ReviewCard = ({
       )}
 
       <div className="flex items-center gap-3 mb-2">
-        <div className="w-12 h-12 relative">
+        <div className="w-16 h-16 relative">
           <Image
             src="/default-user-icon.png"
             alt="ユーザーアイコン"

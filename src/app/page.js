@@ -8,7 +8,9 @@ import {
   orderBy,
   limit,
   getDocs,
-  getFirestore
+  getFirestore,
+  doc,
+  getDoc
 } from "firebase/firestore";
 import { app } from './firebase/config';
 
@@ -33,17 +35,32 @@ export default function Home() {
         // クエリを実行しレビューを取得
         const querySnapshot = await getDocs(q);
         // 各レビューを整形し、配列にまとめる
-        const reviewsData = await Promise.all(querySnapshot.docs.map(async (doc) => {
-          const data = doc.data(); // ドキュメントのデータを取得
+        const reviewsData = await Promise.all(querySnapshot.docs.map(async (docSnapshot) => {
+          const data = docSnapshot.data(); // ドキュメントのデータを取得
+
+          // 店舗情報を取得
+          let shopName = '不明な店舗';
+          if (data.shopId) {
+            try {
+              const shopDocRef = doc(db, 'shops', data.shopId);
+              const shopDoc = await getDoc(shopDocRef);
+              if (shopDoc.exists()) {
+                shopName = shopDoc.data().name;
+              }
+            } catch (error) {
+              console.error('店舗情報取得エラー：', error);
+            }
+          }
+
           return {
-            id: doc.id,
+            id: docSnapshot.id,
             userName: data.userName,
             date: data.createdAt?.toDate().toLocaleDateString('ja-JP', {
               year: 'numeric',
               month: '2-digit',
               day: '2-digit'
             }).replace(/\//g, '.'), // スラッシュをドットに変換
-            shopName: data.shopName,
+            shopName: shopName,
             shopId: data.shopId,
             rating: data.rating,
             content: data.content
