@@ -3,27 +3,46 @@
 import Image from 'next/image';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
-import { FaRegThumbsUp, FaRegComment } from "react-icons/fa";
+import { FaRegThumbsUp, FaRegComment, FaThumbsUp } from "react-icons/fa";
 import Link from "next/link";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { IoTrashOutline } from 'react-icons/io5';
+import { useAuth } from '../contexts/AuthContext';
+import { addLikeToReview, removeLikeFromReview } from '../services/reviewService';
 
 export const ReviewCard = ({
+  id,
   userName,
   date,
   shopName,
   shopId,
   rating,
   content,
+  likes = 0,
+  likedBy = [],
   showDeleteButton,
   onDelete,
   showUnlikeButton,
   onUnlike,
+  avatarUrl = '/default-user-icon.png', // ユーザーアイコンのパスをpropsとして受け取る
+  onLikeToggle,
 }) => {
+  const { user } = useAuth()
   const [isExpanded, setIsExpanded] = useState(false); // レビュー文字数を管理
+  const [likeCount, setLikeCount] = useState(likes); // いいね数
+  const [isLiked, setIsLiked] = useState(false); // ユーザーがいいねしたか
+  const [isLiking, setIsLiking] = useState(false); // いいね処理中の状態
+
   const maxLength = 100; // 表示する最大文字数
-  const shouldTruncate = content. length > maxLength; // 最大文字数を超えてる場合はtrue
+  const shouldTruncate = content.length > maxLength; // 最大文字数を超えてる場合はtrue
   const displayText = shouldTruncate && !isExpanded ? content.slice(0, maxLength) + '...' : content; // 最大文字数より多い場合は「...」を表示
+
+  // ユーザーがいいね済みかチェック
+  useEffect(() => {
+    if (user && likedBy) {
+      setIsLiked(likedBy.includes(user.uid));
+    }
+  }, [user,likedBy])
 
   const renderStars = (rating) => {
     return [...Array(5)].map((_, index) => (
@@ -31,6 +50,46 @@ export const ReviewCard = ({
         ? <StarIcon key={index} sx={{ color: '#FFD700', fontSize: '1rem' }} />
         : <StarBorderIcon key={index} sx={{ color: '#FFD700', fontSize: '1rem' }} />
     ));
+  };
+
+  // いいねボタンのハンドラー
+  const handleLikeToggle = async () => {
+    // ユーザーがログインしていない場合は、アラートを表示して処理を中止
+    if (!user) {
+      alert('いいねするにはログインしてください');
+      return;
+    }
+
+    // すでにいいね処理中の場合は、二重クリックを防ぐために何もしない
+    if (isLiking) return;
+
+    try {
+      // いいね処理中であることを示すフラグをセット（連打防止）
+      setIsLiking(true);
+
+      if (isLiked) {
+        // すでに「いいね」している場合、いいねを取り消す
+        await removeLikeFromReview(id); // Firestoreから「いいね」を削除
+        setLikeCount((prev) => Math.max(prev - 1, 0)); // カウントを1減らす（最小値は0）
+        setIsLiked(false); // UIの状態を「いいねしていない」に更新
+      } else {
+        // まだ「いいね」していない場合、いいねを追加
+        await addLikeToReview(id); // Firestoreに「いいね」を追加
+        setLikeCount((prev) => prev + 1); // カウントを1増やす
+        setIsLiked(true); // UIの状態を「いいね済み」に更新
+      }
+
+      // 親コンポーネントに「いいね状態が変更された」ことを通知（オプション）
+      if (onLikeToggle) {
+        onLikeToggle(id, !isLiked);
+      }
+    } catch (error) {
+      // いいね処理中にエラーが発生したらコンソールに表示
+      console.error('いいね処理エラー：', error);
+    } finally {
+      // いいね処理が完了したので、処理中フラグを解除
+      setIsLiking(false);
+    }
   };
 
   return (
@@ -61,7 +120,7 @@ export const ReviewCard = ({
       <div className="flex items-center gap-3 mb-2">
         <div className="w-16 h-16 relative">
           <Image
-            src="/default-user-icon.png"
+            src={avatarUrl}
             alt="ユーザーアイコン"
             fill
             className="rounded-full border-2 border-[#83BC87] "
@@ -80,13 +139,18 @@ export const ReviewCard = ({
       </div>
       <p className="text-sm mb-3">{displayText}</p>
       <div className="flex items-center gap-6">
-        <button className="flex items-center gap-1 text-gray-500">
-          <FaRegComment sx={{ fontSize: '1.2rem' }} />
+        {/* <button className="flex items-center gap-1 text-gray-500">
+          <FaRegComment className="w-4 h-4" />
           <span className="text-sm">20</span>
-        </button>
-        <button className="flex items-center gap-1 text-gray-500">
-          <FaRegThumbsUp sx={{ fontSize: '1.2rem' }} />
-          <span className="text-sm">30</span>
+        </button> */}
+        <button
+          onClick={handleLikeToggle}
+          disabled={isLiking}
+          className={`flex items-center gap-1 ${isLiked ? 'text-[#FF6B6B]' : 'text-gray-500'} ${isLiking ? 'opacity-50' : 'hover:text-[#FF6B6B]'}`}
+        >
+          {isLiked ? <FaThumbsUp className="w-4 h-4" /> : <FaRegThumbsUp className='w-4 h-4' />}
+
+          <span className="text-sm">{likeCount}</span>
         </button>
         {shouldTruncate && (
           <button

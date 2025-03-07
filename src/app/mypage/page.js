@@ -70,10 +70,10 @@ const MyPage = () => {
   // 各種設定メニュー
   const menuItems = [
     { icon: <GoPencil />, text: 'ユーザー名変更', href: '/mypage/edit-name'},
-    { icon: <MdInsertPhoto />, text: 'ユーザー画像変更', href: '/mypage/edit-avatar'},
+    // { icon: <MdInsertPhoto />, text: 'ユーザー画像変更', href: '/mypage/edit-avatar'},
     { icon: <FaRegComment />, text: '投稿した口コミを見る', href: '/mypage/my-comments'},
     { icon: <FaRegThumbsUp />, text: 'いいねした口コミを見る', href: '/mypage/liked-comments'},
-    { icon: <IoKey />, text: 'パスワード変更', href: '/mypage/change-password'},
+    // { icon: <IoKey />, text: 'パスワード変更', href: '/mypage/change-password'},
   ];
 
   return (
@@ -122,7 +122,7 @@ const MyPage = () => {
         </button>
 
         {/* 退会ボタン - ゲストユーザーには表示しない */}
-        {!user?.isAnonymous && (
+        {/* {!user?.isAnonymous && (
           <Link
             href='/mypage/withdrawal'
             className="block w-full p-4 bg-[#989898] hover:bg-[#f99090] rounded-lg transition-colors duration-200 flex items-center gap-3 mt-8"
@@ -130,7 +130,7 @@ const MyPage = () => {
             <span className="text-xl"><MdPersonOff /></span>
             <span className="text-gray-700">アカウント消去</span>
           </Link>
-        )}
+        )} */}
       </div>
 
       {/* ログアウト確認モーダル */}

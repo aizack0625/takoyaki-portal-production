@@ -274,17 +274,28 @@ const ShopDetailPage = ({ params }) => {
       return <div className="text-center py-4">まだ口コミがありません。最初の口コミを投稿しませんか？</div>;
     }
 
-    return reviews.map((review) => (
-      <ReviewCard
-        key={review.id}
-        userName={review.userName}
-        date={review.date}
-        shopName={shop?.name}
-        shopId={shop?.id}
-        rating={review.rating}
-        content={review.content}
-      />
-    ));
+    return reviews.map((review) => {
+      // レビューの投稿者が現在のユーザーと一致する場合はユーザーのアイコンを使用
+      const isCurrentUserReview = user && review.userId === user.uid;
+      const avatarUrl = isCurrentUserReview && user.photoURL ? user.photoURL : '/default-user-icon.png';
+
+      return (
+        <ReviewCard
+          key={review.id}
+          id={review.id}
+          userName={review.userName}
+          date={review.date}
+          shopName={shop?.name}
+          shopId={shop?.id}
+          rating={review.rating}
+          content={review.content}
+          likes={review.likes || 0}
+          likedBy={review.likedBy || []}
+          avatarUrl={avatarUrl}
+          onLikeToggle={refreshReviews} // いいねが変更されたら口コミを再読み込み
+        />
+      );
+    });
   };
 
   return (
