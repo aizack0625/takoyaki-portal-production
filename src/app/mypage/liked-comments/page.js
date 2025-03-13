@@ -121,7 +121,14 @@ const LikedComments = () => {
       {/* 口コミ一覧 */}
       <div className="space-y-6">
         {likedReviews.length > 0 ? (
-          likedReviews.map((review) => (
+          likedReviews.map((review) => {
+            // 自分の投稿の場合は自分のアイコン、他のユーザーの投稿の場合は投稿者のアイコンを表示
+            const displayAvatarUrl = review.userId === user?.uid
+              ? userAvatarUrl
+              : (review.userAvatarUrl || '/default-user-icon.png');
+
+            return (
+
             <ReviewCard
               key={review.id}
               id={review.id}
@@ -135,9 +142,10 @@ const LikedComments = () => {
               likedBy={review.likedBy}
               showUnlikeButton={true}
               onUnlike={() => handleUnlike(review.id)}
-              avatarUrl={userAvatarUrl}
+              avatarUrl={displayAvatarUrl}
             />
-          ))
+          )
+})
         ) : (
           <p className="text-center text-gray-500 py-8">いいねした口コミはありません。</p>
         )}

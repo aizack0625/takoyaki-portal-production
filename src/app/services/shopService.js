@@ -67,10 +67,16 @@ export const getAllShops = async () => {
       const reviewsSnapshot = await getCountFromServer(reviewsQuery);
       const reviewCount = reviewsSnapshot.data().count;
 
+      // お気に入り数を取得
+      const favoritesQuery = query(collection(db, 'favorites'), where('shopId', '==', doc.id));
+      const favoritesSnapshot = await getCountFromServer(favoritesQuery);
+      const likesCount = favoritesSnapshot.data().count;
+
       shops.push({
         id: doc.id,
         ...shopData,
-        reviews: reviewCount
+        reviews: reviewCount,
+        likes: likesCount
       });
     }
 
@@ -97,11 +103,17 @@ export const getShopById = async (shopId) => {
       const reviewsSnapshot = await getCountFromServer(reviewsQuery);
       const reviewCount = reviewsSnapshot.data().count;
 
+      // お気に入り数を取得
+      const favoritesQuery = query(collection(db, 'favorites'), where('shopId', '==', shopId));
+      const favoritesSnapshot = await getCountFromServer(favoritesQuery);
+      const likesCount = favoritesSnapshot.data().count;
+
       // businessHoursがマップ型の場合は処理する
       let processedShop = {
         id: shopDoc.id,
         ...shopData,
-        reviews: reviewCount
+        reviews: reviewCount,
+        likes: likesCount // 実際のお気に入り数で上書き
       };
 
       return processedShop;

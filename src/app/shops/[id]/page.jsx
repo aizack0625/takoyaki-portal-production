@@ -275,9 +275,8 @@ const ShopDetailPage = ({ params }) => {
     }
 
     return reviews.map((review) => {
-      // レビューの投稿者が現在のユーザーと一致する場合はユーザーのアイコンを使用
-      const isCurrentUserReview = user && review.userId === user.uid;
-      const avatarUrl = isCurrentUserReview && user.photoURL ? user.photoURL : '/default-user-icon.png';
+      // 投稿者のアイコンを使用（投稿者のアイコンがない場合はデフォルト）
+      const avatarUrl = review.userAvatarUrl || '/default-user-icon.png';
 
       return (
         <ReviewCard
@@ -308,7 +307,16 @@ const ShopDetailPage = ({ params }) => {
           {/* 店舗画像 */}
           <div className="w-full h-64 relative">
             <Image
-              src={shop.image || "/shop-placeholder.png"}
+              src={shop.name === "たこ焼きC店"
+                ? "/takoyaki.jpg"
+                : (shop.name === "たこ焼きA店"
+                  ? "/takoyaki.png"
+                  : (shop.name === "たこ焼きB店"
+                    ? "/takoyaki_b.jpg"
+                    : "/shop-placeholder.png"
+                    )
+                  )
+                }
               alt={shop.name}
               fill
               className="object-cover"

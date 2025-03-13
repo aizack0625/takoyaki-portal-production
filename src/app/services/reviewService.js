@@ -64,7 +64,8 @@ export const submitReview = async (reviewData, userId, userName) => {
       imageUrl,
       createdAt: serverTimestamp(),
       likes: 0,
-      likedBy: [] // いいねしたユーザーのIDリスト
+      likedBy: [], // いいねしたユーザーのIDリスト
+      userAvatarUrl: currentUser.photoURL || '/default-user-icon.png' // ユーザーのアイコンURLを保存
     };
 
     const docRef = await addDoc(collection(db, 'reviews'), reviewToSave);
@@ -141,7 +142,7 @@ export const getReviewsByUserId = async (userId) => {
       if (data.shopId) {
         try {
           const shopDocRef = doc(db, 'shops', data.shopId);
-          const shopDoc = await getDocq(shopDocRef);
+          const shopDoc = await getDoc(shopDocRef);
           if (shopDoc.exists()) {
             shopName = shopDoc.data().name;
           }

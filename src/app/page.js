@@ -79,7 +79,8 @@ export default function Home() {
           content: data.content,
           userId: data.userId,
           likes: data.likes || 0,
-          likedBy: data.likedBy || []
+          likedBy: data.likedBy || [],
+          userAvatarUrl: data.userAvatarUrl
         }
       }));
 
@@ -151,7 +152,8 @@ export default function Home() {
           shopId: data.shopId,
           rating: data.rating,
           content: data.content,
-          userId: data.userId
+          userId: data.userId,
+          userAvatarUrl: data.userAvatarUrl
         }
       }));
 
@@ -188,9 +190,8 @@ return (
       <div className="space-y-4">
         {reviews.length > 0 ? (
           reviews.map((review) => {
-            // レビューの投稿者が現在のユーザーと一致する場合はユーザーのアイコンを使用
-            const isCurrentUserReview = user && review.userId === user.uid;
-            const avatarUrl = isCurrentUserReview && user.photoURL ? user.photoURL : '/default-user-icon.png';
+            // 投稿者のアイコンを使用(投稿者のアイコンがない場合はデフォルト)
+            const avatarUrl = review.userAvatarUrl || '/default-user-icon.png';
 
             return (
               <ReviewCard

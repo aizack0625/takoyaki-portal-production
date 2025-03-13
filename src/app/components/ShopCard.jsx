@@ -24,7 +24,16 @@ export const ShopCard = ({ shop }) => {
         <div className="flex gap-4">
           <div className="w-24 h-24 relative bg-gray-200 border-[#83BC87] border-2 rounded-md">
             <Image
-              src="/shop-placeholder.png"
+              src={shop.name === "たこ焼きC店"
+                ? "/takoyaki.jpg"
+                : (shop.name === "たこ焼きA店"
+                  ? "/takoyaki.png"
+                  : (shop.name === "たこ焼きB店"
+                    ? "/takoyaki_b.jpg"
+                    : "/shop-placeholder.png"
+                    )
+                  )
+                }
               alt={shop.name}
               fill
               className="object-cover rounded-lg"
