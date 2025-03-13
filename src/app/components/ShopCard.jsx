@@ -27,7 +27,7 @@ export const ShopCard = ({ shop }) => {
               src={shop.name === "たこ焼きC店"
                 ? "/takoyaki.jpg"
                 : (shop.name === "たこ焼きA店"
-                  ? "/takoyaki.png"
+                  ? "/takoyaki_a.jpg"
                   : (shop.name === "たこ焼きB店"
                     ? "/takoyaki_b.jpg"
                     : "/shop-placeholder.png"

@@ -212,12 +212,13 @@ const MapPage = () => {
             position={currentLocation}
             icon={{
               url: `data:image/svg+xml,${encodeURIComponent(`
-                <svg xmlns="http://www.w3/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                   <circle cx="12" cy="12" r="10" fill="#4285F4" />
-                  <circle cx="12" cy="12" r="10" fill="white" />
+                  <circle cx="12" cy="12" r="6" fill="skyblue" />
                 </svg>
                 `)}`,
-                scaledSize: new google.maps.Size(32, 32),
+                scaledSize: new google.maps.Size(38, 38),
+                anchor: new google.maps.Point(12, 12),
             }}
           />
         )}

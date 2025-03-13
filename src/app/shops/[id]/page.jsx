@@ -305,12 +305,15 @@ const ShopDetailPage = ({ params }) => {
         <div className="p-4">
           <h1 className="text-2xl font-bold mb-2">{shop.name}</h1>
           {/* 店舗画像 */}
-          <div className="w-full h-64 relative">
+          <div
+            className="w-full h-64 relative bg-[#ede7e3] rounded-lg overflow-hidden"
+            style={{ minHeight: '200px', maxHeight: '400px', aspectRatio: '16/9'}}
+          >
             <Image
               src={shop.name === "たこ焼きC店"
                 ? "/takoyaki.jpg"
                 : (shop.name === "たこ焼きA店"
-                  ? "/takoyaki.png"
+                  ? "/takoyaki_a.jpg"
                   : (shop.name === "たこ焼きB店"
                     ? "/takoyaki_b.jpg"
                     : "/shop-placeholder.png"
@@ -319,7 +322,9 @@ const ShopDetailPage = ({ params }) => {
                 }
               alt={shop.name}
               fill
-              className="object-cover"
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, 768px"
+              priority
             />
           </div>
 
@@ -372,7 +377,7 @@ const ShopDetailPage = ({ params }) => {
               disabled={isFavoriteLoading}
               className={`w-[46%] ${isFavorited ? 'bg-[#FF8E8E]' : 'bg-[#FFCACA]'} text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1`}>
               <Favorite sx={{ fontSize: '1rem', color: '#FF7474' }} />
-              {isFavorited ? 'お気に入り登録ずみ' : 'お気に入り登録'}
+              {isFavorited ? 'お気に入り登録済み' : 'お気に入り登録'}
             </button>
             <button className="w-[46%] bg-[#B0E6FF] text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1">
               <LocationOnOutlinedIcon />
