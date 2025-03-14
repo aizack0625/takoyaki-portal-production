@@ -5,14 +5,29 @@ import { useCallback, useMemo, useState, useEffect } from "react";
 import { AccessTime, Close, Favorite, Star } from "@mui/icons-material";
 import { FaRegComment } from "react-icons/fa";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { getAllShops } from "../services/shopService"
+import { useRouter, useSearchParams } from "next/navigation";
+import { getAllShops } from "../services/shopService";
+import { useAuth } from "../contexts/AuthContext";
+import { addFavorite, removeFavorite, isFavorite } from "../services/favoriteService";
+import { LoginRequiredModal } from "../components/LoginRequiredModal";
 
 const MapPage = () => {
+  // URLパラメータからshopIdを取得
+  const searchParams = useSearchParams();
+  const shopIdFromUrl = searchParams.get('shopId');
+
   // ルーターオブジェクトを取得
   const router = useRouter();
   // 現在地の状態を追加
   const [currentLocation, setCurrentLocation] = useState(null);
+  // AuthContextからユーザー情報を取得
+  const { user } = useAuth();
+  // ログインモーダルの表示状態
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  // お気に入り操作中の状態
+  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
+  // 選択された店舗のお気に入り状態
+  const [isFavorited, setIsFavorited] = useState(false);
 
   // 大阪の中心座標
   const center = useMemo(() => (
@@ -97,12 +112,20 @@ const MapPage = () => {
 
         setShops(shopsWithLocation);
         setError(null);
+
+        // shopIdFromUrlがある場合、該当の店舗を選択する
+        if (shopIdFromUrl) {
+          const targetShop = shopsWithLocation.find(shop => shop.id.toString() === shopIdFromUrl);
+          if (targetShop) {
+            handleMarkerClick(targetShop);
+          }
+        }
       } catch (err) {
         console.error('店舗データの取得に失敗しました：', err);
         setError('店舗データの読み込みに失敗しました');
 
         // エラー時にはサンプルデータを使用
-        setShops([
+        const sampleShops = [
           {
             id: 1,
             name: "たこ焼きコロコロ",
@@ -136,14 +159,24 @@ const MapPage = () => {
             likes: 60,
             closedDays: "木曜日、第１月曜日"
           },
-        ]);
+        ];
+
+        setShops(sampleShops);
+
+        // エラー時にもURLパラメータの店舗IDがあれば該当の店舗を選択
+        if (shopIdFromUrl) {
+          const targetShop = sampleShops.find(shop => shop.id.toString() === shopIdFromUrl);
+          if (targetShop) {
+            handleMarkerClick(targetShop);
+          }
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchShops();
-  }, [center]);
+  }, [center, shopIdFromUrl]);
 
   // 住所から緯度・経度を取得する関数
   const geocodeAddress = async (address) => {
@@ -161,8 +194,60 @@ const MapPage = () => {
   };
 
   // マーカークリック時のハンドラー
-  const handleMarkerClick = (shop) => {
+  const handleMarkerClick = async (shop) => {
     setSelectedShop(shop);
+
+    // マップの中心を選択した店舗の位置に移動
+    if (shop && shop.position) {
+      // centerの状態を直接更新することはできないので、マップの中心を移動する処理を追加
+      if (window.map) {
+        window.map.panTo(shop.position);
+      }
+    }
+
+    // ユーザーがログインしている場合、お気に入り状態を確認
+    if (user && shop.id) {
+      try {
+        setIsFavoriteLoading(true);
+        const favoriteStatus = await isFavorite(user.uid, shop.id);
+        setIsFavorited(favoriteStatus);
+      } catch (error) {
+        console.error('お気に入り状態確認エラー：', error);
+      } finally {
+        setIsFavoriteLoading(false);
+      }
+    } else {
+      setIsFavorited(false);
+    }
+  };
+
+  // お気に入りボタンのクリックハンドラー
+  const handleFavoriteClick = async () => {
+    if (!user) { // ログイン済みでない場合、ログインモーダルを表示
+      setShowLoginModal(true);
+      return;
+    }
+
+    if (!selectedShop) return;
+
+    try {
+      setIsFavoriteLoading(true);
+
+      if (isFavorited) {
+        // お気に入りから削除
+        await removeFavorite(user.uid, selectedShop.id);
+      } else {
+        // お気に入り追加
+        await addFavorite(user.uid, selectedShop.id);
+      }
+
+      // 状態を更新
+      setIsFavorited(!isFavorited);
+    } catch (error) {
+      console.error('お気に入り処理エラー：', error);
+    } finally {
+      setIsFavoriteLoading(false);
+    }
   };
 
   // API Keyを取得
@@ -179,7 +264,20 @@ const MapPage = () => {
   const onLoad = useCallback(map => {
     // マップの初期設定をここで実施する
     console.log('Map Component Loaded!')
-  }, []);
+    // グローバル変数にマップインスタンスを保存（パンするために必要）
+    window.map = map;
+
+    // URLパラメータから指定された店舗IDがあり、既に店舗データが読み込まれている場合
+    if (shopIdFromUrl && shops.length > 0) {
+      const targetShop = shops.find(shop => shop.id.toString() === shopIdFromUrl);
+      if (targetShop && targetShop.position) {
+        // マップの中心を該当店舗に移動
+        map.panTo(targetShop.position);
+        // ズームレベルを少し拡大
+        map.setZoom(16);
+      }
+    }
+  }, [shopIdFromUrl, shops]);
 
   if (!isLoaded) {
     return (
@@ -271,7 +369,16 @@ const MapPage = () => {
 
             <div className="w-24 h-24 relative bg-gray-200 border-[#83BC87] border-2 rounded-md">
               <Image
-                src={selectedShop.image || "/shop-placeholder.png"}
+              src={selectedShop.name === "たこ焼きC店"
+                ? "/takoyaki.jpg"
+                : (selectedShop.name === "たこ焼きA店"
+                  ? "/takoyaki_a.jpg"
+                  : (selectedShop.name === "たこ焼きB店"
+                    ? "/takoyaki_b.jpg"
+                    : "/shop-placeholder.png"
+                    )
+                  )
+                }
                 alt="店舗画像"
                 fill
                 className="object-cover rounded-lg"
@@ -319,9 +426,13 @@ const MapPage = () => {
             </div>
 
             <div className="mt-4 space-y-2">
-              <button className="w-full bg-[#FFCACA] text-[#41372F] border-2 border-[#41372F] py-2 rounded-full flex items-center justify-center gap-1">
+              <button
+                onClick={handleFavoriteClick}
+                disabled={isFavoriteLoading}
+                className={`w-full ${isFavorited ? 'bg-[#FF8E8E]' : 'bg-[#FFCACA]'} text-[#41372F] border-2 border-[#41372F] py-2 rounded-full flex items-center justify-center gap-1`}
+              >
                 <Favorite sx={{ fontSize: '1rem', color: '#FF7474' }} />
-                  お気に入り登録
+                {isFavorited ? 'お気に入り登録済み' : 'お気に入り登録'}
               </button>
               <button
                 onClick={() => router.push(`/shops/${selectedShop.id}`)}
@@ -332,6 +443,12 @@ const MapPage = () => {
           </div>
         </div>
       )}
+
+      {/* ログインモーダル表示 */}
+      <LoginRequiredModal
+        open={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
     </div>
   );
 };
