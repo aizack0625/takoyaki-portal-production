@@ -381,7 +381,8 @@ const ShopDetailPage = ({ params }) => {
             </button>
             <button
               onClick={() => router.push(`/map?shopId=${id}`)}
-              className="w-[46%] bg-[#B0E6FF] text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1">
+              className="w-[46%] bg-[#B0E6FF] text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1"
+            >
               <LocationOnOutlinedIcon />
               マップを見る
             </button>

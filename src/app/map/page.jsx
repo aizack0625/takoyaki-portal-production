@@ -13,8 +13,8 @@ import { LoginRequiredModal } from "../components/LoginRequiredModal";
 
 const MapPage = () => {
   // URLパラメータからshopIdを取得
-  const searchParams = useSearchParams();
-  const shopIdFromUrl = searchParams.get('shopId');
+  const searchParams = useSearchParams(); // クエリパラメータを取得
+  const shopIdFromUrl = searchParams.get('shopId'); // shopIdの値を取得
 
   // ルーターオブジェクトを取得
   const router = useRouter();
@@ -115,9 +115,9 @@ const MapPage = () => {
 
         // shopIdFromUrlがある場合、該当の店舗を選択する
         if (shopIdFromUrl) {
-          const targetShop = shopsWithLocation.find(shop => shop.id.toString() === shopIdFromUrl);
+          const targetShop = shopsWithLocation.find(shop => shop.id.toString() === shopIdFromUrl); // リストの中にURLと同じお店があるか探す
           if (targetShop) {
-            handleMarkerClick(targetShop);
+            handleMarkerClick(targetShop); // targetShopを地図に表示
           }
         }
       } catch (err) {
@@ -125,7 +125,7 @@ const MapPage = () => {
         setError('店舗データの読み込みに失敗しました');
 
         // エラー時にはサンプルデータを使用
-        const sampleShops = [
+        setShops([
           {
             id: 1,
             name: "たこ焼きコロコロ",
@@ -159,17 +159,7 @@ const MapPage = () => {
             likes: 60,
             closedDays: "木曜日、第１月曜日"
           },
-        ];
-
-        setShops(sampleShops);
-
-        // エラー時にもURLパラメータの店舗IDがあれば該当の店舗を選択
-        if (shopIdFromUrl) {
-          const targetShop = sampleShops.find(shop => shop.id.toString() === shopIdFromUrl);
-          if (targetShop) {
-            handleMarkerClick(targetShop);
-          }
-        }
+        ]);
       } finally {
         setLoading(false);
       }
@@ -264,7 +254,7 @@ const MapPage = () => {
   const onLoad = useCallback(map => {
     // マップの初期設定をここで実施する
     console.log('Map Component Loaded!')
-    // グローバル変数にマップインスタンスを保存（パンするために必要）
+    // グローバル変数にマップインスタンスを保存（パンする為に必要）
     window.map = map;
 
     // URLパラメータから指定された店舗IDがあり、既に店舗データが読み込まれている場合
