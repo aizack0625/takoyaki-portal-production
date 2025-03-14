@@ -85,7 +85,7 @@ export const Header = () => {
                 // ログイン時のボタン
                 <button
                   onClick={handleLogoutClick}
-                  className='bg-[#83BC87] text-white px-6 py-2 rounded-full hover:bg-[#75a879] transition-all'
+                  className='bg-[#83BC87] opacity-90 text-white text-xs px-5 py-2 rounded-full hover:bg-[#75a879] transition-all'
                 >
                   ログアウト
                 </button>

@@ -93,7 +93,7 @@ export const ReviewCard = ({
   };
 
   return (
-    <div className="bg-white rounded-lg py-8 px-16 shadow-sm mb-4 relative">
+    <div className="bg-white rounded-lg py-8 px-8 shadow-sm mb-4 relative">
 
       {/* マイページの投稿した口コミ一覧でのみ、投稿を削除ボタンを表示 */}
       {showDeleteButton && (
