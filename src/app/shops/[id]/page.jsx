@@ -302,7 +302,7 @@ const ShopDetailPage = ({ params }) => {
       <div className="pb-20">
 
         {/* 店舗情報 */}
-        <div className="p-4">
+        <div className="p-4 max-w-[900px] mx-auto">
           <h1 className="text-2xl font-bold mb-2">{shop.name}</h1>
           {/* 店舗画像 */}
           <div
@@ -375,11 +375,14 @@ const ShopDetailPage = ({ params }) => {
             <button
               onClick={handleFavoriteClick}
               disabled={isFavoriteLoading}
-              className={`w-[46%] ${isFavorited ? 'bg-[#FF8E8E]' : 'bg-[#FFCACA]'} text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1`}>
+              className={`w-[46%] ${isFavorited ? 'bg-[#FF8E8E]' : 'bg-[#FFCACA]'} text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1 whitespace-nowrap`}>
               <Favorite sx={{ fontSize: '1rem', color: '#FF7474' }} />
-              {isFavorited ? 'お気に入り登録済み' : 'お気に入り登録'}
+              {isFavorited ? 'お気に入り登録済' : 'お気に入り登録'}
             </button>
-            <button className="w-[46%] bg-[#B0E6FF] text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1">
+            <button
+              onClick={() => router.push(`/map?shopId=${id}`)}
+              className="w-[46%] bg-[#B0E6FF] text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1"
+            >
               <LocationOnOutlinedIcon />
               マップを見る
             </button>

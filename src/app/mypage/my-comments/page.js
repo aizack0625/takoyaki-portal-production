@@ -116,6 +116,8 @@ const MyComments = () => {
               shopId={comment.shopId}
               rating={comment.rating}
               content={comment.content}
+              likes={comment.likes || 0}
+              likedBy={comment.likedBy || []}
               showDeleteButton={true}
               onDelete={() => handleDelete(comment.id)}
               avatarUrl={userAvatarUrl}
