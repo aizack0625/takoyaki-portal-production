@@ -112,10 +112,6 @@ https://www.figma.com/design/j9DHKQxcZ5vsC0OtYCHc1l/%E3%82%B5%E3%82%A4%E3%83%88%
 
 **フォント**
 
-h1
-
-- Dela Gothic One
-
 他
 
 - Noto Sans JP
