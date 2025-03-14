@@ -4,7 +4,8 @@
 https://www.figma.com/design/j9DHKQxcZ5vsC0OtYCHc1l/%E3%82%B5%E3%82%A4%E3%83%88%E3%83%9E%E3%83%83%E3%83%97%EF%BC%88%E3%81%9F%E3%81%93%E3%83%9D%E3%83%BC%EF%BC%89  
 
 サイトURL：  
-https://takoyaki-portal-production.vercel.app/
+https://takoyaki-portal-production.vercel.app/  
+  
 
 ### １、テーマ
 
