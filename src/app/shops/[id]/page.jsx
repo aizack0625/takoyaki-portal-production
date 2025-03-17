@@ -369,7 +369,7 @@ const ShopDetailPage = ({ params }) => {
           </div>
           {/* 店舗画像カルーセル */}
           <div
-            className="w-full h-64 relative bg-[#ede7e3] rounded-lg overflow-hidden cursor-pointer"
+            className="w-full h-64 relative bg-[#ffe7d8] rounded-lg overflow-hidden cursor-pointer"
             style={{ minHeight: '200px', maxHeight: '400px', aspectRatio: '16/9'}}
             onClick={handleImageModalOpen}
           >
@@ -566,7 +566,7 @@ const ShopDetailPage = ({ params }) => {
               )}
             </Box>
           </Modal>
-          
+
           {/* レビュー投稿モーダル */}
           <Modal
             open={isReviewModalOpen}
