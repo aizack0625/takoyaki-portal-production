@@ -608,12 +608,12 @@ const ShopDetailPage = ({ params }) => {
               />
 
               <div className="mb-4">
-                <button
+                {/* <button
                   onClick={() => document.getElementById('image-input').click()}
                   className="w-full py-3 bg-[#E8E8E8] text-gray-600 rounded-lg flex items-center justify-center gap-2"
                 >
                   <span>写真を追加</span>
-                </button>
+                </button> */}
                 <input
                   id="image-input"
                   type="file"

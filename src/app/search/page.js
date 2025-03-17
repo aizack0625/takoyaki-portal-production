@@ -44,15 +44,19 @@ export default function SearchPage() {
     router.push('/shops/register');
   };
 
-  const prefectures = [
-    '北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県',
-    '茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県',
-    '新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県',
-    '静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県',
-    '奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県',
-    '徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県',
-    '熊本県','大分県','宮崎県','鹿児島県','沖縄県'
-  ];
+  // 地方ごとに都道府県を整理
+  const prefecturesByRegion = {
+    '北海道・東北地方': ['北海道', '青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県'],
+    '関東地方': ['茨城県', '栃木県', '群馬県', '埼玉県', '千葉県', '東京都', '神奈川県'],
+    '中部地方': ['新潟県', '富山県', '石川県', '福井県', '山梨県', '長野県', '岐阜県', '静岡県', '愛知県'],
+    '近畿地方': ['三重県', '滋賀県', '京都府', '大阪府', '兵庫県', '奈良県', '和歌山県'],
+    '中国地方': ['鳥取県', '島根県', '岡山県', '広島県', '山口県'],
+    '四国地方': ['徳島県', '香川県', '愛媛県', '高知県'],
+    '九州・沖縄地方': ['福岡県', '佐賀県', '長崎県', '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県']
+  };
+
+  // 全都道府県のフラットな配列（検索フィルタリング用）
+  const allPrefectures = Object.values(prefecturesByRegion).flat();
 
   // ページロード時に店舗データを取得
   useEffect(() => {
@@ -164,20 +168,27 @@ export default function SearchPage() {
       <Dialog
         open={isPrefModalOpen}
         onClose={() => setIsPrefModalOpen(false)}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
       >
         <DialogTitle>都道府県を選択</DialogTitle>
         <DialogContent>
-          <List sx={{ pt: 0 }}>
-            {prefectures.map((prefecture) => (
-              <ListItem disablePadding key={prefecture}>
-                <ListItemButton onClick={() => handlePrefectureSelect(prefecture)}>
-                  <ListItemText primary={prefecture} />
-                </ListItemButton>
-              </ListItem>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Object.entries(prefecturesByRegion).map(([region, prefectures]) => (
+              <div key={region} className="mb-4">
+                <h3 className="text-lg font-bold text-[#83BC87] border-b pb-2 mb-2">{region}</h3>
+                <List sx={{ pt: 0 }}>
+                  {prefectures.map((prefecture) => (
+                    <ListItem disablePadding key={prefecture} dense>
+                      <ListItemButton onClick={() => handlePrefectureSelect(prefecture)}>
+                        <ListItemText primary={prefecture} />
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </List>
+              </div>
             ))}
-          </List>
+          </div>
         </DialogContent>
       </Dialog>
 

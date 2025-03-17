@@ -36,6 +36,8 @@ export const Header = () => {
         return 'お気に入り';
       case '/mypage':
         return 'マイページ';
+      case '/mypage/edit-name':
+        return 'ユーザー名変更';
       case '/mypage/edit-avatar':
         return 'ユーザー画像変更';
       case '/mypage/liked-comments':

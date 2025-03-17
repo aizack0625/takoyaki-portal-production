@@ -336,103 +336,121 @@ const MapPage = () => {
       </GoogleMap>
 
       {/* 現在地取得ボタンを追加 */}
-      <button
+      {/* <button
         onClick={getCurrentLocation}
         className="absolute bottom-4 right-4 bg-white p-2 rounded-full shadow-lg"
       >
         <span role="img" aria-label="現在地">📍</span>
-      </button>
+      </button> */}
 
       {/* 店舗情報モーダル */}
       {selectedShop && (
-        <div className="fixed bottom-[56px] left-0 right-0 bg-[#FFF8F2] border-2 border-[#83BC87] rounded-t-2xl shadow-lg transition-transform duration-1000 z-50 max-h-[35vh] max-w-[900px] mx-auto overflow-auto md:max-h-[70vh]">
-          <div className="p-4">
-            <div className="flex justify-between items-center mb-2 md:mb-4">
-              <h2 className="text-lg font-bold text-[#53463c] truncate pr-2">{selectedShop.name}</h2>
+        <div className="fixed bottom-[56px] left-0 right-0 bg-[#FFF8F2] border-2 border-[#83BC87] rounded-t-2xl shadow-lg transition-transform duration-300 z-50 max-h-[50vh] max-w-[900px] mx-auto overflow-auto md:max-h-[70vh]">
+          <div className="p-5">
+            {/* ヘッダー部分 */}
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="text-xl font-bold text-[#53463c] truncate pr-2">{selectedShop.name}</h2>
               <button
                 onClick={() => setSelectedShop(null)}
-                className="p-1 hover:bg-gray-100 rounded-full"
+                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="閉じる"
               >
-                <Close className="text-sm md:text-base"/>
+                <Close className="text-gray-500"/>
               </button>
             </div>
 
-          <div className="flex flex-row items-start">
-            <div className="w-24 h-24 relative bg-gray-200 border-[#83BC87] border-2 rounded-md flex-shrink-0">
-              <Image
-              src={selectedShop.name === "たこ焼きC店"
-                ? "/takoyaki.jpg"
-                : (selectedShop.name === "たこ焼きA店"
-                  ? "/takoyaki_a.jpg"
-                  : (selectedShop.name === "たこ焼きB店"
-                    ? "/takoyaki_b.jpg"
-                    : (selectedShop.name === "たこ焼きD店"
-                      ? "/takoyaki_d.jpg"
-                      : "/shop-placeholder.png"
+            {/* メインコンテンツ: 画像と店舗情報 */}
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* 画像部分 - モバイルでは大きく、PCでは左側に配置 */}
+              <div className="w-full md:w-1/3 h-48 md:h-auto relative bg-gray-200 border-[#83BC87] border-2 rounded-lg flex-shrink-0 overflow-hidden">
+                <Image
+                  src={selectedShop.name === "たこ焼きC店"
+                    ? "/takoyaki.jpg"
+                    : (selectedShop.name === "たこ焼きA店"
+                      ? "/takoyaki_a.jpg"
+                      : (selectedShop.name === "たこ焼きB店"
+                        ? "/takoyaki_b.jpg"
+                        : (selectedShop.name === "たこ焼きD店"
+                          ? "/takoyaki_d.jpg"
+                          : "/shop-placeholder.png"
+                          )
+                        )
                       )
-                    )
-                  )
-                }
-                alt="店舗画像"
-                fill
-                className="object-cover rounded-lg"
-              />
-              </div>
-          </div>
-
-            <div className="space-y-1 flex-1 min-w-0">
-              <p className="text-sm text-gray-600 truncate">
-                {selectedShop.prefecture || ''}
-                {selectedShop.city || ''}
-                {selectedShop.address || ''}
-              </p>
-
-              <div className="flex items-center gap-4 flex-wrap">
-                <div className="flex items-center">
-                  <Star sx={{ color: '#FFD700', fontSize: '1rem' }} />
-                  <span className="text-sm ml-1">
-                    {selectedShop.rating || 0}
-                  </span>
-                </div>
-                <div className="flex items-center text-[#FF8E8E]">
-                  <Favorite sx={{ fontSize: '1rem' }} />
-                  <span className="text-sm ml-1">
-                    {selectedShop.likes || 0}件
-                  </span>
-                </div>
-                <div className="flex items-center text-gray-600">
-                  <FaRegComment />
-                  <span className="text-sm ml-1">
-                    {selectedShop.reviews || 0}レビュー
-                  </span>
-                </div>
+                    }
+                  alt="店舗画像"
+                  fill
+                  className="object-cover rounded-lg"
+                />
               </div>
 
-              <div className="flex items-center text-gray-600">
-                <AccessTime sx={{ fontSize: '1rem' }} className="mr-1" />
-                <span className="text-sm">
-                  営業時間：{selectedShop.businessHours || '情報なし'}
-                </span>
-              </div>
+              {/* 店舗情報部分 */}
+              <div className="flex-1 min-w-0">
+                {/* 住所 */}
+                <div className="bg-white p-3 rounded-lg shadow-sm mb-3">
+                  <p className="text-sm text-gray-700 font-medium flex items-center">
+                    <span className="inline-block mr-2">📍</span>
+                    {selectedShop.prefecture || ''}
+                    {selectedShop.city || ''}
+                    {selectedShop.address || ''}
+                  </p>
+                </div>
 
-              <p className="text-sm text-gray-600">
-                定休日：{selectedShop.closedDays || '情報なし'}
-              </p>
+                {/* 評価・レビュー情報 */}
+                <div className="bg-white p-3 rounded-lg shadow-sm mb-3">
+                  <div className="flex items-center gap-5 flex-wrap">
+                    <div className="flex items-center">
+                      <Star sx={{ color: '#FFD700', fontSize: '1.25rem' }} />
+                      <span className="text-sm font-bold ml-1">
+                        {selectedShop.rating || 0}
+                      </span>
+                    </div>
+                    <div className="flex items-center text-[#FF8E8E]">
+                      <Favorite sx={{ fontSize: '1.25rem' }} />
+                      <span className="text-sm font-medium ml-1">
+                        {selectedShop.likes || 0}件
+                      </span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <FaRegComment size={20} />
+                      <span className="text-sm font-medium ml-1">
+                        {selectedShop.reviews || 0}レビュー
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 営業情報 */}
+                <div className="bg-white p-3 rounded-lg shadow-sm mb-3">
+                  <div className="flex items-center text-gray-700 mb-2">
+                    <AccessTime sx={{ fontSize: '1.25rem' }} className="mr-2 text-[#83BC87]" />
+                    <span className="text-sm font-medium">
+                      営業時間：{selectedShop.businessHours || '情報なし'}
+                    </span>
+                  </div>
+                  <div className="flex items-center text-gray-700">
+                    <span className="mr-2 text-[#83BC87]">🗓️</span>
+                    <span className="text-sm font-medium">
+                      定休日：{selectedShop.closedDays || '情報なし'}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="mt-4 space-y-2">
+            {/* ボタン部分 */}
+            <div className="mt-4 flex gap-3 flex-col md:flex-row">
               <button
                 onClick={handleFavoriteClick}
                 disabled={isFavoriteLoading}
-                className={`w-full ${isFavorited ? 'bg-[#FF8E8E]' : 'bg-[#FFCACA]'} text-[#41372F] border-2 border-[#41372F] py-2 rounded-full flex items-center justify-center gap-1`}
+                className={`flex-1 ${isFavorited ? 'bg-[#FF8E8E]' : 'bg-[#FFCACA]'} text-[#41372F] border-2 border-[#41372F] py-2.5 rounded-full flex items-center justify-center gap-2 transition-colors hover:opacity-90 font-medium`}
               >
-                <Favorite sx={{ fontSize: '1rem', color: '#FF7474' }} />
+                <Favorite sx={{ fontSize: '1.2rem', color: isFavorited ? '#ff4d64' : '#FF7474' }} />
                 {isFavorited ? 'お気に入り登録済み' : 'お気に入り登録'}
               </button>
               <button
                 onClick={() => router.push(`/shops/${selectedShop.id}`)}
-                className="w-full border-2 border-[#41372F] bg-[#B5D4C4] text-[#41372F] py-2 rounded-full">
-                店舗情報を全て表示・口コミ投稿
+                className="flex-1 border-2 border-[#41372F] bg-[#B5D4C4] text-[#41372F] py-2.5 rounded-full hover:bg-[#9EC5B0] transition-colors font-medium">
+                店舗情報を見る・口コミ投稿
               </button>
             </div>
           </div>

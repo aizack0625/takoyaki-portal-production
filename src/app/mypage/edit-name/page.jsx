@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../../contexts/AuthContext";
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
+import Link from "next/link";
+import { IoArrowBack } from "react-icons/io5";
 
 export default function EditNamePage() {
   const router = useRouter();
@@ -53,8 +55,14 @@ export default function EditNamePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-md mx-auto">
+      <div className="flex items-centermb-6">
+        <Link href="/mypage" className="flex items-center text-gray-600 hover:text-gray-800">
+          <IoArrowBack className="mr-2" />
+          マイページに戻る
+        </Link>
+      </div>
         <h1 className="text-xl font-bold text-center mb-8">
-          ユーザーネーム変更
+          {/* ユーザー名変更 */}
         </h1>
 
         <div className="bg-white p-6 rounded-lg shadow-md">
