@@ -145,7 +145,7 @@ const ShopRegisterPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 mb-14">
+    <div className="container mx-auto px-4 py-6 mb-14 max-w-[900px]">
       <h1 className="text-xl font-bold mb-6">店舗情報の登録</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">

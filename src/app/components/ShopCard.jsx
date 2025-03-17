@@ -16,24 +16,26 @@ const formatBusinessHours = (businessHours) => {
   return businessHours;
 };
 
+
 // 店舗カードコンポーネント
 export const ShopCard = ({ shop }) => {
+
+  const imageMap = {
+    "たこ焼きC店": "/takoyaki.jpg",
+    "たこ焼きA店": "/takoyaki_a.jpg",
+    "たこ焼きB店": "/takoyaki_b.jpg",
+    "たこ焼きD店": "/takoyaki_d.jpg",
+  }
+
+  const imageSrc = imageMap[shop.name] || "/shop-placeholder.png";
+  
   return (
     <Link href={`/shops/${shop.id}`}>
       <div className="bg-white rounded-lg p-4 shadow cursor-pointer  mb-2">
         <div className="flex gap-4">
           <div className="w-24 h-24 relative bg-gray-200 border-[#83BC87] border-2 rounded-md">
             <Image
-              src={shop.name === "たこ焼きC店"
-                ? "/takoyaki.jpg"
-                : (shop.name === "たこ焼きA店"
-                  ? "/takoyaki_a.jpg"
-                  : (shop.name === "たこ焼きB店"
-                    ? "/takoyaki_b.jpg"
-                    : "/shop-placeholder.png"
-                    )
-                  )
-                }
+              src={imageSrc}
               alt={shop.name}
               fill
               className="object-cover rounded-lg"

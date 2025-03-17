@@ -42,7 +42,12 @@ export const Header = () => {
         return 'いいねした口コミ';
       case '/mypage/my-comments':
         return '投稿した口コミ';
+      case '/shops/register':
+        return '店舗情報登録'
       default:
+        if (path.startsWith('/shops/edit/')) {
+          return '店舗情報修正';
+        }
         if (path.startsWith('/shops/')) {
           return '店舗詳細';
         }

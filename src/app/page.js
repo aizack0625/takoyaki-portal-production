@@ -185,7 +185,7 @@ export default function Home() {
   }
 
 return (
-    <main className="container mx-auto px-4 pb-20">
+    <main className="container px-4 pb-20 max-w-[900px] mx-auto">
       <h2 className="text-xl font-bold my-6">新着たこ活</h2>
       <div className="space-y-4">
         {reviews.length > 0 ? (

@@ -74,7 +74,7 @@ export default function FavoritePage() {
   }
 
   return (
-    <div className='container mx-auto px-4 py-8 pb-20'>
+    <div className='container mx-auto px-4 py-8 pb-20 max-w-[900px]'>
       <h1 className='text-2xl font-bold mb-6'>お気に入り</h1>
 
       {isLoading ? (

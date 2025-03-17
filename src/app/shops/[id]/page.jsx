@@ -13,6 +13,8 @@ import EventBusyOutlinedIcon from '@mui/icons-material/EventBusyOutlined';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import CloseIcon from '@mui/icons-material/Close';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import { imageConfigDefault } from "next/dist/shared/lib/image-config";
 import { useAuth } from "../../contexts/AuthContext";
 import { LoginRequiredModal } from "../../components/LoginRequiredModal";
@@ -53,6 +55,54 @@ const ShopDetailPage = ({ params }) => {
   const router = useRouter();
   const { user } = useAuth(); // ログイン認証Auth
   const [showLoginModal, setShowLoginModal] = useState(false); // ログインモーダル表示管理
+  // 画像カルーセル用のstate
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  // 画像クリックで拡大表示できるモーダル用のstate
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+
+  // 各店舗の複数画像
+  const getShopImages = (shopName) => {
+    if (shopName === "たこ焼きA店") {
+      return [
+        "/takoyaki_a.jpg",
+        "/takoyaki_a_2.jpg",
+        "/takoyaki_a_3.jpg",
+      ];
+    } else if (shopName === "たこ焼きC店") {
+      return [
+        "/takoyaki.jpg",
+        "/takoyaki_c_2.jpg",
+        "/takoyaki_c_3.jpg",
+      ];
+    } else if (shopName === "たこ焼きB店") {
+      return [
+        "/takoyaki_b.jpg",
+      ];
+    } else if (shopName === "たこ焼きD店") {
+      return [
+        "/takoyaki_d.jpg",
+        "/takoyaki_d_2.jpg",
+        "/takoyaki_d_3.jpg",
+      ];
+    } else {
+      return ["/shop-placeholder.png"];
+    }
+  };
+
+  // 画像カルーセルのナビゲーション関数
+  const goToPreviousImage = () => {
+    const images = getShopImages(shop.name);
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === 0 ? images.length - 1 : prevIndex - 1
+    );
+  };
+
+  const goToNextImage = () => {
+    const images = getShopImages(shop.name);
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === images.length - 1 ? 0 : prevIndex + 1
+    );
+  };
 
   // レビューフックの利用
   const {
@@ -115,6 +165,11 @@ const ShopDetailPage = ({ params }) => {
     checkFavoriteStatus();
   }, [user, id]);
 
+  // 画像モーダルのハンドラー
+  const handleImageModalOpen = () => setImageModalOpen(true);
+  const handleImageModalClose = () => setImageModalOpen(false);
+
+  // メニューモーダルのハンドラー
   const handleMenuModalOpen = () => setIsMenuModalOpen(true);
   const handleMenuModalClose = () => setIsMenuModalOpen(false);
 
@@ -303,29 +358,73 @@ const ShopDetailPage = ({ params }) => {
 
         {/* 店舗情報 */}
         <div className="p-4 max-w-[900px] mx-auto">
-          <h1 className="text-2xl font-bold mb-2">{shop.name}</h1>
-          {/* 店舗画像 */}
+          <div className="flex justify-between items-center mb-2">
+            <h1 className="text-2xl font-bold">{shop.name}</h1>
+            <button
+              onClick={() => router.push(`/shops/edit/${id}`)}
+              className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded border border-gray-300"
+            >
+              店舗情報修正
+            </button>
+          </div>
+          {/* 店舗画像カルーセル */}
           <div
-            className="w-full h-64 relative bg-[#ede7e3] rounded-lg overflow-hidden"
+            className="w-full h-64 relative bg-[#ede7e3] rounded-lg overflow-hidden cursor-pointer"
             style={{ minHeight: '200px', maxHeight: '400px', aspectRatio: '16/9'}}
+            onClick={handleImageModalOpen}
           >
+            {/* 現在の画像 */}
             <Image
-              src={shop.name === "たこ焼きC店"
-                ? "/takoyaki.jpg"
-                : (shop.name === "たこ焼きA店"
-                  ? "/takoyaki_a.jpg"
-                  : (shop.name === "たこ焼きB店"
-                    ? "/takoyaki_b.jpg"
-                    : "/shop-placeholder.png"
-                    )
-                  )
-                }
-              alt={shop.name}
+              src={getShopImages(shop.name)[currentImageIndex]}
+              alt={`${shop.name}の画像 ${currentImageIndex + 1}`}
               fill
               className="object-contain"
               sizes="(max-width: 768px) 100vw, 768px"
               priority
             />
+            {/* 複数画像がある場合のみナビゲーションボタンを表示 */}
+            {getShopImages(shop.name).length > 1 && (
+              <>
+                {/* 前の画像ボタン */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToPreviousImage();
+                  }}
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/70 rounded-full p-1 hover:bg-white/90 transition-colors"
+                  aria-label="前の画像"
+                >
+                  <ArrowBackIosNewIcon fontSize="medium" />
+                </button>
+
+                {/* 次の画像ボタン */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToNextImage();
+                  }}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/70 rounded-full p-1 hover:bg-white/90 transition-colors"
+                  aria-label="次の画像"
+                >
+                  <ArrowForwardIosIcon fontSize="medium" />
+                </button>
+
+                {/* 画像インジゲーター */}
+                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-2">
+                  {getShopImages(shop.name).map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImageIndex(index);
+                      }}
+                      className={`w-3 h-3 rounded-full ${index === currentImageIndex ? 'bg-[#83BC87]' : 'bg-white/70'}`}
+                      aria-label={`画像 ${index + 1} に移動`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-4 my-2">
@@ -395,6 +494,79 @@ const ShopDetailPage = ({ params }) => {
             </button>
           </div>
 
+          {/* 画像拡大モーダル */}
+          <Modal
+            open={imageModalOpen}
+            onClose={handleImageModalClose}
+            aria-labelledby="image-modal-title"
+          >
+            <Box className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-5xl bg-white p-4 rounded-lg shadow-lg'>
+              <div className="flex justify-between items-center mb-4">
+                <h2 id="image-modal-title" className="text-xl font-bold">
+                  {shop.name}の写真
+                </h2>
+                <button onClick={handleImageModalClose}>
+                  <CloseIcon />
+                </button>
+              </div>
+
+              <div className="relative w-full" style={{ height: '70vh', maxHeight: '80vh' }}>
+                <Image
+                  src={getShopImages(shop.name)[currentImageIndex]}
+                  alt={`${shop.name}の画像 ${currentImageIndex + 1}`}
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 1024px) 95vw, 1024px"
+                  priority
+                />
+
+                {getShopImages(shop.name).length > 1 && (
+                  <>
+                    {/* 前の画像ボタン */}
+                    <button
+                      onClick={goToPreviousImage}
+                      className="absolute left-2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/70 rounded-full p-2 hover:bg-white/90 transition-colors"
+                      aria-label="前の画像"
+                    >
+                      <ArrowBackIosNewIcon fontSize="large" />
+                    </button>
+
+                    {/* 次の画像ボタン */}
+                    <button
+                      onClick={goToNextImage}
+                      className="absolute right-2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/70 rounded-full p-2 hover:bg-white/90 transition-colors"
+                      aria-label="次の画像"
+                    >
+                      <ArrowForwardIosIcon fontSize="large" />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* サムネイル一覧 */}
+              {getShopImages(shop.name).length > 1 && (
+                <div className="flex justify-center gap-2 mt-4 overflow-x-auto">
+                  {getShopImages(shop.name).map((src, index) => (
+                    <div
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`relative h-16 w-16 cursor-pointer border-2 rounded ${
+                        index === currentImageIndex ? 'border-[#83BC87]' : 'border-transparent'
+                      }`}
+                    >
+                      <Image
+                        src={src}
+                        alt={`${shop.name}のサムネイル ${index + 1}`}
+                        fill
+                        className="object-cover rounded"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Box>
+          </Modal>
+          
           {/* レビュー投稿モーダル */}
           <Modal
             open={isReviewModalOpen}

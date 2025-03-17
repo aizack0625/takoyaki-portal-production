@@ -77,7 +77,7 @@ const MyPage = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-x-2xl">
+    <div className="container mx-auto px-4 py-8 max-x-2xl max-w-[900px]">
       {/* Profile Section */}
       <div className="flex flex-col items-center mb-8">
         <div className="w-24 h-24 rounded-full border-2 border-[#83BC87] overflow-hidden mb-4">

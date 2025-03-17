@@ -345,19 +345,20 @@ const MapPage = () => {
 
       {/* 店舗情報モーダル */}
       {selectedShop && (
-        <div className="fixed bottom-[56px] left-0 right-0 bg-[#FFF8F2] border-2 border-[#83BC87] rounded-t-2xl shadow-lg transition-transform duration-1000 z-50">
+        <div className="fixed bottom-[56px] left-0 right-0 bg-[#FFF8F2] border-2 border-[#83BC87] rounded-t-2xl shadow-lg transition-transform duration-1000 z-50 max-h-[35vh] max-w-[900px] mx-auto overflow-auto md:max-h-[70vh]">
           <div className="p-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-[#53463c]">{selectedShop.name}</h2>
+            <div className="flex justify-between items-center mb-2 md:mb-4">
+              <h2 className="text-lg font-bold text-[#53463c] truncate pr-2">{selectedShop.name}</h2>
               <button
                 onClick={() => setSelectedShop(null)}
                 className="p-1 hover:bg-gray-100 rounded-full"
               >
-                <Close />
+                <Close className="text-sm md:text-base"/>
               </button>
             </div>
 
-            <div className="w-24 h-24 relative bg-gray-200 border-[#83BC87] border-2 rounded-md">
+          <div className="flex flex-row items-start">
+            <div className="w-24 h-24 relative bg-gray-200 border-[#83BC87] border-2 rounded-md flex-shrink-0">
               <Image
               src={selectedShop.name === "たこ焼きC店"
                 ? "/takoyaki.jpg"
@@ -365,7 +366,10 @@ const MapPage = () => {
                   ? "/takoyaki_a.jpg"
                   : (selectedShop.name === "たこ焼きB店"
                     ? "/takoyaki_b.jpg"
-                    : "/shop-placeholder.png"
+                    : (selectedShop.name === "たこ焼きD店"
+                      ? "/takoyaki_d.jpg"
+                      : "/shop-placeholder.png"
+                      )
                     )
                   )
                 }
@@ -374,15 +378,16 @@ const MapPage = () => {
                 className="object-cover rounded-lg"
               />
               </div>
+          </div>
 
-            <div className="space-y-2">
-              <p className="text-sm text-gray-600">
+            <div className="space-y-1 flex-1 min-w-0">
+              <p className="text-sm text-gray-600 truncate">
                 {selectedShop.prefecture || ''}
                 {selectedShop.city || ''}
                 {selectedShop.address || ''}
               </p>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 flex-wrap">
                 <div className="flex items-center">
                   <Star sx={{ color: '#FFD700', fontSize: '1rem' }} />
                   <span className="text-sm ml-1">

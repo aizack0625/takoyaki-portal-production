@@ -136,7 +136,7 @@ export default function SearchPage() {
   }
 
   return (
-    <div className='container mx-auto px-4 pb-20'>
+    <div className='container mx-auto px-4 pb-20 max-w-[900px]'>
       {/* 検索バー */}
       <form onSubmit={handleSearch} className='relative mt-4'>
         <input

@@ -11,6 +11,7 @@ import {
   limit, // クエリの取得数を制限
   where, // Firestoreからデータを検索
   getCountFromServer, // ドキュメント数を取得
+  updateDoc, // ドキュメントを更新
 } from "firebase/firestore";
 import { app } from '../firebase/config';
 
@@ -165,6 +166,41 @@ export const getRecommendedShops = async (limitCount = 5) => {
     return shops;
   } catch (error) {
     console.error('おすすめ店舗取得エラー：', error);
+    throw error;
+  }
+};
+
+/**
+ * 店舗情報を更新する
+ * @param {string} shopId - 店舗ID
+ * @param {Object} shopData - 更新する店舗データ
+ * @returns {Promise<void>}
+ */
+export const updateShop = async (shopId, shopData) => {
+  try {
+    // 営業時間の処理（配列からカンマ区切りの文字列に変換）
+    const processedData = {
+      ...shopData,
+      // 営業時間を文字列に変換（例：12:00~18:00)
+      businessHours: Array.isArray(shopData.businessHours)
+        ? shopData.businessHours
+            .filter(hour => hour.start && hour.end) // 空の営業時間をフィルタリング
+            .map(hour => `${hour.start}~${hour.end}`)
+            .join(', ')
+        : shopData.businessHours,
+      // エリア情報を更新（都道府県＋市区町村）
+      area: `${shopData.prefecture}${shopData.city}`,
+      // 更新日時を追加
+      updatedAt: new Date(),
+    };
+
+    // Firestoreを更新
+    const shopRef = doc(db, 'shops', shopId);
+    await updateDoc(shopRef, processedData);
+
+    return shopId;
+  } catch (error) {
+    console.error('店舗更新エラー：', error);
     throw error;
   }
 };
