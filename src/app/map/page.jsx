@@ -1,8 +1,8 @@
 'use client';
 
-import { GoogleMap, MarkerF, useLoadScript } from "@react-google-maps/api";
+import { GoogleMap, MarkerF, useLoadScript, DirectionsRenderer, DirectionsService } from "@react-google-maps/api";
 import { useCallback, useMemo, useState, useEffect } from "react";
-import { AccessTime, Close, Favorite, Star } from "@mui/icons-material";
+import { AccessTime, Close, Favorite, Star, DirectionsWalk } from "@mui/icons-material";
 import { FaRegComment } from "react-icons/fa";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -29,6 +29,11 @@ const MapPage = () => {
   // 選択された店舗のお気に入り状態
   const [isFavorited, setIsFavorited] = useState(false);
 
+  // ルート表示関連の状態を追加
+  const [directions, setDirections] = useState(null);
+  const [showRoute, setShowRoute] = useState(false);
+  const [routeInfo, setRouteInfo] = useState(null); // 距離と時間情報
+
   // 大阪の中心座標
   const center = useMemo(() => (
     currentLocation || { lat: 34.6937, lng: 135.5023 }
@@ -43,13 +48,23 @@ const MapPage = () => {
             lat: position.coords.latitude,
             lng: position.coords.longitude
           });
+          // 現在地取得後にマップの中心を移動
+          if (window.map) {
+            window.map.panTo({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            });
+            window.map.setZoom(15); // ズームレベルを調整
+          }
         },
         (error) => {
-          console.error("Error getting location:", error);
+          console.error("位置情報取得エラー:", error);
+          alert("位置情報を取得できませんでした。位置情報の利用を許可してください。");
         }
       );
     } else {
-      console.error("Geolocation is not supported by ")
+      console.error("お使いのブラウザは位置情報をサポートしていません")
+      alert("お使いのブラウザは位置情報をサポートしていません");
     }
   };
 
@@ -185,6 +200,10 @@ const MapPage = () => {
 
   // マーカークリック時のハンドラー
   const handleMarkerClick = async (shop) => {
+    // 新しい店舗が選択されたらルート表示をリセット
+    setDirections(null);
+    setShowRoute(false);
+
     setSelectedShop(shop);
 
     // マップの中心を選択した店舗の位置に移動
@@ -269,6 +288,51 @@ const MapPage = () => {
     }
   }, [shopIdFromUrl, shops]);
 
+  // ルート表示をクリアする関数
+  const clearRoute = () => {
+    setDirections(null);
+    setShowRoute(false);
+    setRouteInfo(null);
+  };
+
+  // 徒歩ルートを取得する関数
+  const getWalkingRoute = () => {
+    if (!currentLocation || !selectedShop || !selectedShop.position) {
+      alert('現在地と目的地の両方が必要です。現在地を取得してください。');
+      return;
+    }
+
+    const directionsService = new google.maps.DirectionsService();
+
+    directionsService.route(
+      {
+        origin: currentLocation,
+        destination: selectedShop.position,
+        travelMode: google.maps.TravelMode.WALKING,
+        provideRouteAlternatives: false,
+      },
+      (result, status) => {
+        if (status === google.maps.DirectionsStatus.OK) {
+          setDirections(result);
+          setShowRoute(true);
+
+          // ルート情報（距離と時間）を抽出
+          if (result.routes && result.routes.length > 0 &&
+              result.routes[0].legs && result.routes[0].legs.length > 0) {
+            const leg = result.routes[0].legs[0];
+            setRouteInfo({
+              distance: leg.distance.text,
+              duration: leg.duration.text
+            });
+          }
+        } else {
+          console.error(`ルート取得エラー: ${status}`);
+          alert('ルートを取得できませんでした。しばらく経ってからお試しください。');
+        }
+      }
+    );
+  };
+
   if (!isLoaded) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-112px)]">
@@ -295,7 +359,7 @@ const MapPage = () => {
         onLoad={onLoad}
       >
         {/* 現在地マーカーを追加 */}
-        {currentLocation && (
+        {currentLocation && !showRoute && (
           <MarkerF
             position={currentLocation}
             icon={{
@@ -311,7 +375,8 @@ const MapPage = () => {
           />
         )}
 
-        {shops.map(shop => (
+        {/* 店舗マーカーを表示（ルート表示中でない場合） */}
+        {!showRoute && shops.map(shop => (
           <MarkerF
             key={shop.id}
             position={shop.position}
@@ -333,15 +398,31 @@ const MapPage = () => {
             }}
           />
         ))}
+
+        {/* ルート表示 */}
+        {directions && showRoute && (
+          <DirectionsRenderer
+            directions={directions}
+            options={{
+              suppressMarkers: false,
+              polylineOptions: {
+                strokeColor: "#4285F4",
+                strokeWeight: 5,
+                strokeOpacity: 0.8,
+              },
+            }}
+          />
+        )}
       </GoogleMap>
 
-      {/* 現在地取得ボタンを追加 */}
-      {/* <button
+      {/* 現在地取得ボタン */}
+      <button
         onClick={getCurrentLocation}
-        className="absolute bottom-4 right-4 bg-white p-2 rounded-full shadow-lg"
+        className="absolute bottom-20 right-4 bg-white p-3 rounded-full shadow-lg border-2 border-[#83BC87] hover:bg-[#F5F5F5] transition-colors"
+        aria-label="現在地に移動"
       >
-        <span role="img" aria-label="現在地">📍</span>
-      </button> */}
+        <span role="img" aria-label="現在地" className="text-xl">📍</span>
+      </button>
 
       {/* 店舗情報モーダル */}
       {selectedShop && (
@@ -393,6 +474,16 @@ const MapPage = () => {
                     {selectedShop.city || ''}
                     {selectedShop.address || ''}
                   </p>
+
+                  {/* ルート情報を表示 */}
+                  {routeInfo && (
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                      <p className="text-sm text-[#53463c] flex items-center">
+                        <DirectionsWalk sx={{ fontSize: '1rem', color: '#83BC87', marginRight: '0.5rem' }}/>
+                        現在地から徒歩で {routeInfo.duration} （{routeInfo.distance}）
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* 評価・レビュー情報 */}
@@ -452,6 +543,28 @@ const MapPage = () => {
                 className="flex-1 border-2 border-[#41372F] bg-[#B5D4C4] text-[#41372F] py-2.5 rounded-full hover:bg-[#9EC5B0] transition-colors font-medium">
                 店舗情報を見る・口コミ投稿
               </button>
+            </div>
+
+            {/* ルート表示ボタンを追加 */}
+            <div className="mt-3">
+              {showRoute ? (
+                <button
+                  onClick={clearRoute}
+                  className="w-full border-2 border-[#41372F] bg-[#FFB347] text-[#41372F] py-2.5 rounded-full hover:bg-[#FFA500] transition-colors font-medium flex items-center justify-center gap-2"
+                >
+                  <DirectionsWalk />
+                  ルート表示を終了
+                </button>
+              ) : (
+                <button
+                  onClick={getWalkingRoute}
+                  className="w-full border-2 border-[#41372F] bg-[#FFB347] text-[#41372F] py-2.5 rounded-full hover:bg-[#FFA500] transition-colors font-medium flex items-center justify-center gap-2"
+                  disabled={!currentLocation}
+                >
+                  <DirectionsWalk />
+                  徒歩ルートを表示
+                </button>
+              )}
             </div>
           </div>
         </div>

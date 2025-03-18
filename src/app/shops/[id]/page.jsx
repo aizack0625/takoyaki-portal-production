@@ -466,7 +466,7 @@ const ShopDetailPage = ({ params }) => {
           <div className="flex flex-wrap gap-6 justify-center items-center">
           <button
             onClick={handleMenuModalOpen}
-            className="w-[46%] bg-[#83BC87] text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1"
+            className="w-[46%] bg-[#ffe4d1] text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1"
           >
               <IoBookOutline sx={{ fontSize: '1rem', color: '#FF7474' }} />
               メニュー情報
@@ -474,20 +474,20 @@ const ShopDetailPage = ({ params }) => {
             <button
               onClick={handleFavoriteClick}
               disabled={isFavoriteLoading}
-              className={`w-[46%] ${isFavorited ? 'bg-[#FF8E8E]' : 'bg-[#FFCACA]'} text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1 whitespace-nowrap`}>
+              className={`w-[46%] ${isFavorited ? 'bg-[#fcbcbc]' : 'bg-[#ffdfdf]'} text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1 whitespace-nowrap`}>
               <Favorite sx={{ fontSize: '1rem', color: '#FF7474' }} />
               {isFavorited ? 'お気に入り登録済' : 'お気に入り登録'}
             </button>
             <button
               onClick={() => router.push(`/map?shopId=${id}`)}
-              className="w-[46%] bg-[#B0E6FF] text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1"
+              className="w-[46%] bg-[#fdfadc] text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1"
             >
               <LocationOnOutlinedIcon />
               マップを見る
             </button>
             <button
               onClick={handleReviewModalOpen}
-              className="w-[46%] bg-[#ececec] text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1"
+              className="w-[46%] bg-[#ddfbea] text-[#41372F] border-2 border-[#41372F] py-3 rounded-full flex items-center justify-center gap-1"
             >
               <FaRegPenToSquare />
               口コミを投稿
