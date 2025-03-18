@@ -534,7 +534,7 @@ const ShopDetailPage = ({ params }) => {
                     {/* 次の画像ボタン */}
                     <button
                       onClick={goToNextImage}
-                      className="absolute right-2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/70 rounded-full p-2 hover:bg-white/90 transition-colors"
+                      className="absolute right-[-2.5rem] top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/70 rounded-full p-2 hover:bg-white/90 transition-colors"
                       aria-label="次の画像"
                     >
                       <ArrowForwardIosIcon fontSize="large" />
