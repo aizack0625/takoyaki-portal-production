@@ -1,8 +1,8 @@
 'use client';
 
-import { GoogleMap, MarkerF, useLoadScript } from "@react-google-maps/api";
+import { GoogleMap, MarkerF, useLoadScript, DirectionsService, DirectionsRenderer } from "@react-google-maps/api";
 import { useCallback, useMemo, useState, useEffect } from "react";
-import { AccessTime, Close, Favorite, Star } from "@mui/icons-material";
+import { AccessTime, Close, Favorite, Star, DirectionsWalk, CalendarMonth, Store } from "@mui/icons-material";
 import { FaRegComment } from "react-icons/fa";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -28,6 +28,8 @@ const MapPage = () => {
   const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
   // 選択された店舗のお気に入り状態
   const [isFavorited, setIsFavorited] = useState(false);
+  // 店舗情報モーダルの表示状態を管理する新しい状態変数
+  const [showShopModal, setShowShopModal] = useState(false);
 
   // 大阪の中心座標
   const center = useMemo(() => (
@@ -66,6 +68,12 @@ const MapPage = () => {
   const [loading, setLoading] = useState(true);
   // エラー状態を管理
   const [error, setError] = useState(null);
+
+  // ルート表示関連の状態を追加
+  const [directions, setDirections] = useState(null);
+  const [routeDistance, setRouteDistance] = useState("");
+  const [routeDuration, setRouteDuration] = useState("");
+  const [showRoute, setShowRoute] = useState(false);
 
   // 店舗データを取得する
   useEffect(() => {
@@ -186,6 +194,7 @@ const MapPage = () => {
   // マーカークリック時のハンドラー
   const handleMarkerClick = async (shop) => {
     setSelectedShop(shop);
+    setShowShopModal(true);
 
     // マップの中心を選択した店舗の位置に移動
     if (shop && shop.position) {
@@ -269,6 +278,59 @@ const MapPage = () => {
     }
   }, [shopIdFromUrl, shops]);
 
+  // 現在地から店舗までのルートを計算する関数
+  const calculateRoute = useCallback(() => {
+    if (!currentLocation || !selectedShop || !selectedShop.position) {
+      return;
+    }
+
+    const directionsService = new google.maps.DirectionsService();
+
+    directionsService.route(
+      {
+        origin: currentLocation,
+        destination: selectedShop.position,
+        travelMode: google.maps.TravelMode.WALKING, // 徒歩ルートを指定
+      },
+      (result, status) => {
+        if (status === google.maps.DirectionsStatus.OK) {
+          setDirections(result);
+
+          // ルートの距離と時間を設定
+          const route = result.routes[0];
+          if (route && route.legs[0]) {
+            setRouteDistance(route.legs[0].distance.text);
+            setRouteDuration(route.legs[0].duration.text);
+          }
+
+          setShowRoute(true);
+        } else {
+          console.error(`ルートの計算に失敗しました: ${status}`);
+          setDirections(null);
+          setRouteDistance("");
+          setRouteDuration("");
+          setShowRoute(false);
+        }
+      }
+    );
+  }, [currentLocation, selectedShop]);
+
+  // ルート表示をクリアする関数
+  const clearRoute = () => {
+    setDirections(null);
+    setRouteDistance("");
+    setRouteDuration("");
+    setShowRoute(false);
+  };
+
+  // 選択された店舗が変更された時の処理（ルートクリアを削除）
+  useEffect(() => {
+    // 店舗が選択されたら自動的にモーダルを表示
+    if (selectedShop) {
+      setShowShopModal(true);
+    }
+  }, [selectedShop]);
+
   if (!isLoaded) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-112px)]">
@@ -333,25 +395,50 @@ const MapPage = () => {
             }}
           />
         ))}
+
+        {/* ルート表示 */}
+        {directions && showRoute && (
+          <DirectionsRenderer
+            directions={directions}
+            options={{
+              polylineOptions: {
+                strokeColor: "#83BC87",
+                strokeWeight: 5,
+                strokeOpacity: 0.8
+              },
+              suppressMarkers: true // マーカーの自動表示を抑制
+            }}
+          />
+        )}
       </GoogleMap>
 
       {/* 現在地取得ボタンを追加 */}
-      {/* <button
+      <button
         onClick={getCurrentLocation}
-        className="absolute bottom-4 right-4 bg-white p-2 rounded-full shadow-lg"
+        className="absolute bottom-4 right-4 bg-white p-3 rounded-full shadow-lg z-10"
       >
         <span role="img" aria-label="現在地">📍</span>
-      </button> */}
+      </button>
 
-      {/* 店舗情報モーダル */}
-      {selectedShop && (
+      {/* ルート表示中にルートクリアボタンを表示 */}
+      {showRoute && !showShopModal && (
+        <button
+          onClick={clearRoute}
+          className="absolute bottom-4 left-4 bg-white py-2 px-4 rounded-full shadow-lg z-10 flex items-center"
+        >
+          <span className="text-gray-700 text-sm font-medium">ルート消去</span>
+        </button>
+      )}
+
+      {/* 店舗情報モーダル - selectedShopがある場合に加えて、showShopModalがtrueの場合のみ表示 */}
+      {selectedShop && showShopModal && (
         <div className="fixed bottom-[56px] left-0 right-0 bg-[#FFF8F2] border-2 border-[#83BC87] rounded-t-2xl shadow-lg transition-transform duration-300 z-50 max-h-[50vh] max-w-[900px] mx-auto overflow-auto md:max-h-[70vh]">
           <div className="p-5">
             {/* ヘッダー部分 */}
             <div className="flex justify-between items-center mb-3">
               <h2 className="text-xl font-bold text-[#53463c] truncate pr-2">{selectedShop.name}</h2>
               <button
-                onClick={() => setSelectedShop(null)}
+                onClick={() => setShowShopModal(false)}
                 className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
                 aria-label="閉じる"
               >
@@ -428,7 +515,9 @@ const MapPage = () => {
                     </span>
                   </div>
                   <div className="flex items-center text-gray-700">
-                    <span className="mr-2 text-[#83BC87]">🗓️</span>
+                    <span className="mr-2 text-[#83BC87]">
+                      <CalendarMonth />
+                    </span>
                     <span className="text-sm font-medium">
                       定休日：{selectedShop.closedDays || '情報なし'}
                     </span>
@@ -437,8 +526,47 @@ const MapPage = () => {
               </div>
             </div>
 
+            {/* ルート情報の表示 */}
+            {showRoute && routeDistance && routeDuration && (
+              <div className="mt-3 bg-white p-3 rounded-lg shadow-sm">
+                <h3 className="font-medium text-[#53463c] mb-2">徒歩ルート情報</h3>
+                <div className="flex items-center gap-4">
+                  <div>
+                    <span className="text-sm font-bold text-[#83BC87]">距離：</span>
+                    <span className="text-sm">{routeDistance}</span>
+                  </div>
+                  <div>
+                    <span className="text-sm font-bold text-[#83BC87]">予想時間：</span>
+                    <span className="text-sm">{routeDuration}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+
+
             {/* ボタン部分 */}
             <div className="mt-4 flex gap-3 flex-col md:flex-row">
+
+              {/* ルート表示ボタン */}
+              {!showRoute ? (
+                <button
+                  onClick={calculateRoute}
+                  disabled={!currentLocation}
+                  className="px-2 flex-1 border-2 border-[#41372F] bg-[#FFE7D8] text-[#41372F] py-2.5 rounded-full hover:bg-[#6BA56F] transition-colors font-medium flex items-center justify-center gap-2"
+                >
+                  <DirectionsWalk /> 現在地からの徒歩ルートを表示
+                </button>
+              ) : (
+                <button
+                  onClick={clearRoute}
+                  className="px-2 flex-1 border-2 border-[#41372F] bg-gray-300 text-[#41372F] py-2.5 rounded-full hover:bg-gray-400 transition-colors font-medium"
+                >
+                  ルート表示を消す
+                </button>
+              )}
+
+              {/* お気に入り登録ボタン */}
               <button
                 onClick={handleFavoriteClick}
                 disabled={isFavoriteLoading}
@@ -447,12 +575,16 @@ const MapPage = () => {
                 <Favorite sx={{ fontSize: '1.2rem', color: isFavorited ? '#ff4d64' : '#FF7474' }} />
                 {isFavorited ? 'お気に入り登録済み' : 'お気に入り登録'}
               </button>
+
+              {/* 店舗情報・口コミボタン */}
               <button
                 onClick={() => router.push(`/shops/${selectedShop.id}`)}
                 className="flex-1 border-2 border-[#41372F] bg-[#B5D4C4] text-[#41372F] py-2.5 rounded-full hover:bg-[#9EC5B0] transition-colors font-medium">
+                <Store sx={{ fontSize: '1.2rem' }}/>
                 店舗情報を見る・口コミ投稿
               </button>
             </div>
+
           </div>
         </div>
       )}
