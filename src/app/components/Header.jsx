@@ -114,7 +114,7 @@ export const Header = () => {
             </div>
 
             {/* メインビジュアル */}
-            <div className='relative w-full h-full'>
+            <div className='relative w-full h-full max-w-[1000px] mx-auto'>
               <Image
                 src="/takoyaki.jpg"
                 fill
@@ -142,7 +142,7 @@ export const Header = () => {
                     color: '#FF8E8E'
                   }}
                 >
-                  たこ焼き屋ポータルサイト
+                  たこ焼き好きが集まるアプリ
                 </p>
               </div>
             </div>
