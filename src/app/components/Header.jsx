@@ -142,7 +142,7 @@ export const Header = () => {
                     color: '#FF8E8E'
                   }}
                 >
-                  たこ焼き好きが集まるアプリ
+                  たこ焼き屋情報まとめアプリ
                 </p>
               </div>
             </div>
