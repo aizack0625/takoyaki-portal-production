@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>たこポー - たこ焼き屋検索サイト</title>
+  <meta name="description" content="お気に入りのたこ焼き屋を見つけよう">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/takoyaki.png" type="image/png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="/takoyaki.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/takoyaki.png">
+  <meta name="theme-color" content="#FF9900">
+  <meta name="application-name" content="たこポー">
+  <meta name="msapplication-TileImage" content="/takoyaki.png">
+  <meta name="msapplication-TileColor" content="#FF9900">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background-color: #FFF8F2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+    .loader {
+      max-width: 500px;
+      padding: 20px;
+    }
+    img {
+      max-width: 150px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="loader">
+    <img src="/takoyaki.png" alt="たこポー">
+    <h1>たこポー</h1>
+    <p>アプリを読み込んでいます...</p>
+    <noscript>JavaScriptを有効にしてください。</noscript>
+    <script>
+      // Service Workerを登録
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js').then(function(registration) {
+            console.log('ServiceWorker登録成功: ', registration.scope);
+          }, function(err) {
+            console.log('ServiceWorker登録失敗: ', err);
+          });
+        });
+      }
+
+      // メインページへリダイレクト
+      setTimeout(function() {
+        window.location.href = '/';
+      }, 500);
+    </script>
+  </div>
+</body>
+</html>

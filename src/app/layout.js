@@ -20,13 +20,26 @@ export const metadata = {
     title: "たこポー"
   },
   icons: {
-    icon: '/takoyaki.png',
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/takoyaki.png', sizes: 'any' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-192x192.png', sizes: '192x192', type: 'image/png' }
+    ],
     shortcut: '/takoyaki.png',
     apple: '/takoyaki.png',
-    other: {
-      rel: 'apple-touch-icon-precomposed',
-      url: '/takoyaki.png',
-    },
+    other: [
+      {
+        rel: 'apple-touch-icon-precomposed',
+        url: '/takoyaki.png',
+      },
+      {
+        rel: 'mask-icon',
+        url: '/takoyaki.png',
+        color: '#FF9900'
+      }
+    ]
   }
 };
 
@@ -38,11 +51,16 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ja">
       <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/takoyaki.png" type="image/png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
         <link rel="apple-touch-icon" href="/takoyaki.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/takoyaki.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/takoyaki.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/takoyaki.png" />
         <link rel="mask-icon" href="/takoyaki.png" color="#FF9900" />
+        <meta name="application-name" content="たこポー" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="msapplication-TileImage" content="/takoyaki.png" />
