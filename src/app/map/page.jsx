@@ -432,9 +432,9 @@ const MapPage = () => {
 
       {/* 店舗情報モーダル - selectedShopがある場合に加えて、showShopModalがtrueの場合のみ表示 */}
       {selectedShop && showShopModal && (
-        <div className="fixed bottom-[56px] left-0 right-0 bg-[#FFF8F2] border-2 border-[#83BC87] rounded-t-2xl shadow-lg transition-transform duration-300 z-50 max-h-[50vh] max-w-[900px] mx-auto overflow-hidden md:max-h-[70vh] flex flex-col">
+        <div className="fixed bottom-[56px] left-0 right-0 bg-[#FFF8F2] border-2 border-[#83BC87] rounded-t-2xl shadow-lg transition-transform duration-300 z-50 max-h-[38vh] max-w-[900px] mx-auto overflow-hidden md:max-h-[70vh] flex flex-col">
           {/* ヘッダー部分 - スクロールしても固定表示 */}
-          <div className="sticky top-0 z-10 bg-[#FFF8F2] border-b border-[#E6DDD4] px-5 py-3 flex justify-between items-center">
+          <div className="sticky top-0 z-10 bg-[#FFF8F2] border-b border-[#E6DDD4] px-5 flex justify-between items-center">
             <h2 className="text-xl font-bold text-[#53463c] truncate pr-2">{selectedShop.name}</h2>
             <button
               onClick={() => setShowShopModal(false)}
