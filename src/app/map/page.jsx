@@ -402,8 +402,8 @@ const MapPage = () => {
             directions={directions}
             options={{
               polylineOptions: {
-                strokeColor: "#83BC87",
-                strokeWeight: 5,
+                strokeColor: "#c9842a",
+                strokeWeight: 10,
                 strokeOpacity: 0.8
               },
               suppressMarkers: true // マーカーの自動表示を抑制
