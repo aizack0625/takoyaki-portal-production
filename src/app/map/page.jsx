@@ -432,20 +432,21 @@ const MapPage = () => {
 
       {/* 店舗情報モーダル - selectedShopがある場合に加えて、showShopModalがtrueの場合のみ表示 */}
       {selectedShop && showShopModal && (
-        <div className="fixed bottom-[56px] left-0 right-0 bg-[#FFF8F2] border-2 border-[#83BC87] rounded-t-2xl shadow-lg transition-transform duration-300 z-50 max-h-[50vh] max-w-[900px] mx-auto overflow-auto md:max-h-[70vh]">
-          <div className="p-5">
-            {/* ヘッダー部分 */}
-            <div className="flex justify-between items-center mb-3">
-              <h2 className="text-xl font-bold text-[#53463c] truncate pr-2">{selectedShop.name}</h2>
-              <button
-                onClick={() => setShowShopModal(false)}
-                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
-                aria-label="閉じる"
-              >
-                <Close className="text-gray-500"/>
-              </button>
-            </div>
+        <div className="fixed bottom-[56px] left-0 right-0 bg-[#FFF8F2] border-2 border-[#83BC87] rounded-t-2xl shadow-lg transition-transform duration-300 z-50 max-h-[50vh] max-w-[900px] mx-auto overflow-hidden md:max-h-[70vh] flex flex-col">
+          {/* ヘッダー部分 - スクロールしても固定表示 */}
+          <div className="sticky top-0 z-10 bg-[#FFF8F2] border-b border-[#E6DDD4] px-5 py-3 flex justify-between items-center">
+            <h2 className="text-xl font-bold text-[#53463c] truncate pr-2">{selectedShop.name}</h2>
+            <button
+              onClick={() => setShowShopModal(false)}
+              className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="閉じる"
+            >
+              <Close className="text-gray-500"/>
+            </button>
+          </div>
 
+          {/* コンテンツ部分 - スクロール可能 */}
+          <div className="p-5 pt-2 overflow-auto">
             {/* メインコンテンツ: 画像と店舗情報 */}
             <div className="flex flex-col md:flex-row gap-4">
               {/* 画像部分 - モバイルでは大きく、PCでは左側に配置 */}
@@ -543,8 +544,6 @@ const MapPage = () => {
               </div>
             )}
 
-
-
             {/* ボタン部分 */}
             <div className="mt-4 flex gap-3 flex-col md:flex-row">
 
@@ -553,7 +552,7 @@ const MapPage = () => {
                 <button
                   onClick={calculateRoute}
                   disabled={!currentLocation}
-                  className="px-2 flex-1 border-2 border-[#41372F] bg-[#FFE7D8] text-[#41372F] py-2.5 rounded-full hover:bg-[#6BA56F] transition-colors font-medium flex items-center justify-center gap-2"
+                  className="px-2 flex-1 border-2 border-[#41372F] bg-[#FFE7D8] text-[#41372F] py-2.5 rounded-full hover:bg-[#fad5be] transition-colors font-medium flex items-center justify-center gap-2"
                 >
                   <DirectionsWalk /> 現在地からの徒歩ルートを表示
                 </button>
@@ -579,7 +578,7 @@ const MapPage = () => {
               {/* 店舗情報・口コミボタン */}
               <button
                 onClick={() => router.push(`/shops/${selectedShop.id}`)}
-                className="flex-1 border-2 border-[#41372F] bg-[#B5D4C4] text-[#41372F] py-2.5 rounded-full hover:bg-[#9EC5B0] transition-colors font-medium">
+                className="flex-1 border-2 border-[#41372F] bg-[#B5D4C4] text-[#41372F] py-2.5 rounded-full hover:bg-[#9EC5B0] transition-colors font-medium flex items-center justify-center gap-2">
                 <Store sx={{ fontSize: '1.2rem' }}/>
                 店舗情報を見る・口コミ投稿
               </button>
