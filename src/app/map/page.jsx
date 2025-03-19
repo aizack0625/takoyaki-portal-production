@@ -559,7 +559,7 @@ const MapPage = () => {
               ) : (
                 <button
                   onClick={clearRoute}
-                  className="px-2 flex-1 border-2 border-[#41372F] bg-gray-300 text-[#41372F] py-2.5 rounded-full hover:bg-gray-400 transition-colors font-medium"
+                  className="px-2 flex-1 border-2 border-[#41372F] bg-gray-100 text-[#41372F] py-2.5 rounded-full hover:bg-gray-200 transition-colors font-medium"
                 >
                   ルート表示を消す
                 </button>
